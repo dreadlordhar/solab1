@@ -2,14 +2,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimerTask;
 
-/**
- * Taimer de tip 3: reactioneaza PERIODIC, la fiecare "perioadaMs" milisecunde,
- * incepand dupa o intarziere initiala, pana cand este oprit explicit
- * (metoda cancel() a obiectului Timer).
- *
- * Se foloseste impreuna cu:
- * new Timer().scheduleAtFixedRate(new TaimerPeriodic(...), intarziere, perioada);
- */
 public class TaimerPeriodic extends TimerTask {
 
     private static final SimpleDateFormat FORMAT_ORA = new SimpleDateFormat("HH:mm:ss.SSS");

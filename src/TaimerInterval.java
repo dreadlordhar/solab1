@@ -2,12 +2,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimerTask;
 
-/**
- * Taimer de tip 1: reactioneaza o singura data, dupa un anumit INTERVAL
- * de timp (intarziere) de la momentul programarii.
- *
- * Se foloseste impreuna cu: new Timer().schedule(new TaimerInterval(...), intarziere);
- */
 public class TaimerInterval extends TimerTask {
 
     private static final SimpleDateFormat FORMAT_ORA = new SimpleDateFormat("HH:mm:ss.SSS");

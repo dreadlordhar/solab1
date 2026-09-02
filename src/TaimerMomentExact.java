@@ -2,12 +2,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimerTask;
 
-/**
- * Taimer de tip 2: reactioneaza o singura data, la un anumit MOMENT
- * de timp, indicat printr-un obiect Date.
- *
- * Se foloseste impreuna cu: new Timer().schedule(new TaimerMomentExact(...), momentTinta);
- */
 public class TaimerMomentExact extends TimerTask {
 
     private static final SimpleDateFormat FORMAT_ORA = new SimpleDateFormat("HH:mm:ss.SSS");
