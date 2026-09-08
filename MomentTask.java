@@ -1,5 +1,6 @@
 import java.util.TimerTask;
 import javax.swing.JLabel;
+import java.awt.Toolkit;
 
 public class MomentTask extends TimerTask {
     private JLabel label;
@@ -10,6 +11,7 @@ public class MomentTask extends TimerTask {
 
     @Override
     public void run() {
-        label.setText("Moment fix: am ajuns la ora tinta!");
+        label.setText("Reminder: verifica-ti sarcina!");
+        Toolkit.getDefaultToolkit().beep();
     }
 }
