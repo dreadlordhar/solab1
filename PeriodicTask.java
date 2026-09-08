@@ -1,5 +1,6 @@
 import java.util.TimerTask;
 import javax.swing.JLabel;
+import java.awt.Toolkit;
 
 public class PeriodicTask extends TimerTask {
     private JLabel label;
@@ -12,6 +13,12 @@ public class PeriodicTask extends TimerTask {
     @Override
     public void run() {
         contor++;
-        label.setText("Periodic: " + contor);
+
+        if (contor % 10 == 0) {
+            label.setText("Pauza! Relaxeaza-te putin.");
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            label.setText("Timp de studiu: " + contor + " secunde");
+        }
     }
 }
