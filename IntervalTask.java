@@ -1,5 +1,6 @@
 import java.util.TimerTask;
 import javax.swing.JLabel;
+import java.awt.Toolkit;
 
 public class IntervalTask extends TimerTask {
     private JLabel label;
@@ -10,6 +11,7 @@ public class IntervalTask extends TimerTask {
 
     @Override
     public void run() {
-        label.setText("Interval: au trecut 5 secunde!");
+        label.setText("Sesiunea de studiu s-a terminat!");
+        Toolkit.getDefaultToolkit().beep();
     }
 }
