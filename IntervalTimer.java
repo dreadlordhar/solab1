@@ -14,7 +14,7 @@ class IntervalTimer extends TimerTask{
       Toolkit.getDefaultToolkit().beep();
   }
 public void start(){
-Timer timer = new Timer();
+timer = new Timer();
 timer.schedule(this,secunde *1000);
 }
 public void stop(){
