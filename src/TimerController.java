@@ -1,228 +1,250 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Calendar;
+import java.util.Date;
 
 public class TimerController {
 
-    private final TimerModel model;
-    private final TimerPanel view;
+        private final TimerModel model;
+        private final TimerPanel view;
 
-    // Timerul java.util
-    private final Timer timer;
+        private final TimerService timerService;
 
-    // Sarcina executată de timer
-    private TimerTask timerTask;
+        public TimerController(
+                        TimerModel model,
+                        TimerPanel view) {
 
-    public TimerController(
-            TimerModel model,
-            TimerPanel view
-    ) {
+                this.model = model;
+                this.view = view;
 
-        this.model = model;
-        this.view = view;
+                timerService = new TimerService();
 
-        // Creăm Timer-ul
-        timer = new Timer();
+                // Adăugăm acțiunile butoanelor
+                view.getStartButton()
+                                .addActionListener(this::startTimer);
 
-        // Adăugăm acțiunile butoanelor
-        view.getStartButton()
-                .addActionListener(this::startTimer);
+                view.getPauseButton()
+                                .addActionListener(this::pauseTimer);
 
-        view.getPauseButton()
-                .addActionListener(this::pauseTimer);
+                view.getResetButton()
+                                .addActionListener(this::resetTimer);
 
-        view.getResetButton()
-                .addActionListener(this::resetTimer);
-    }
-
-    // START
-
-    private void startTimer(ActionEvent e) {
-
-        // Setăm timpul dacă timerul nu a fost pornit
-        if (model.getRemainingSeconds() <= 0) {
-
-            int minutes =
-                    (Integer) view
-                            .getMinutesSpinner()
-                            .getValue();
-
-            int seconds =
-                    (Integer) view
-                            .getSecondsSpinner()
-                            .getValue();
-
-            int totalSeconds =
-                    minutes * 60 + seconds;
-
-            // Verificăm timpul introdus
-            if (totalSeconds <= 0) {
-
-                view.showWarning(
-                        "Setează un interval mai mare decât 0 secunde!",
-                        "Invalid Time"
-                );
-
-                return;
-            }
-
-            model.setTime(
-                    minutes,
-                    seconds
-            );
+                view.switchTimerPage(e -> switchTimer());
+                view.onDeleteHistory(e -> view.deleteSelectedHistoryTime());
         }
 
-        // Creăm sarcina executată de Timer
-        timerTask = new TimerTask() {
+        // START
 
-            @Override
-            public void run() {
+        private void startTimer(ActionEvent e) {
 
-                // Actualizăm interfața în thread-ul Swing
-                SwingUtilities.invokeLater(() -> updateTimer());
-            }
-        };
+                if (view.isExactTimeVisible()) {
+                        startExactTimeTimer();
+                        return;
+                }
 
-        // Executăm după 1 secundă și apoi la fiecare 1 secundă
-        timer.schedule(timerTask, 1000, 1000);
+                // Setăm timpul dacă timerul nu a fost pornit
+                if (model.getRemainingSeconds() <= 0) {
 
-        view.getStartButton()
-                .setEnabled(false);
+                        int minutes = (Integer) view
+                                        .getMinutesSpinner()
+                                        .getValue();
 
-        view.getPauseButton()
-                .setEnabled(true);
+                        int seconds = (Integer) view
+                                        .getSecondsSpinner()
+                                        .getValue();
 
-        view.setSpinnersEnabled(false);
+                        int totalSeconds = minutes * 60 + seconds;
 
-        view.setStatusText(
-                "Mission in progress..."
-        );
-    }
+                        // Verificăm timpul introdus
+                        if (totalSeconds <= 0) {
 
-    // ACTUALIZARE TIMER
+                                view.showWarning(
+                                                "Setează un interval mai mare decât 0 secunde!",
+                                                "Invalid Time");
 
-    private void updateTimer() {
+                                return;
+                        }
 
-        // Verificăm dacă mai există timp
-        if (!model.isFinished()) {
+                        model.setTime(
+                                        minutes,
+                                        seconds);
+                }
 
-            // Scădem o secundă
-            model.tick();
+                // Creăm sarcina executată de Timer
+                // Executăm după 1 secundă și apoi la fiecare 1 secundă
+                timerService.scheduleRepeating(
+                                1000,
+                                1000,
+                                () -> SwingUtilities.invokeLater(this::updateTimer));
 
-            // Actualizăm afișarea
-            updateDisplay();
+                view.getStartButton()
+                                .setEnabled(false);
 
-        } else {
+                view.getPauseButton()
+                                .setEnabled(true);
 
-            // Timpul a expirat
-            finishTimer();
-        }
-    }
+                view.setSpinnersEnabled(false);
 
-    // ACTUALIZARE AFIȘARE
-
-    private void updateDisplay() {
-
-        int minutes =
-                model.getMinutes();
-
-        int seconds =
-                model.getSeconds();
-
-        // Formatăm timpul MM:SS
-        String time =
-                String.format(
-                        "%02d:%02d",
-                        minutes,
-                        seconds
-                );
-
-        view.setTimerText(time);
-
-        // Actualizăm bara de progres
-        view.setProgress(
-                model.getProgress()
-        );
-    }
-
-    // PAUZĂ
-
-    private void pauseTimer(ActionEvent e) {
-
-        // Oprim sarcina curentă
-        if (timerTask != null) {
-            timerTask.cancel();
+                view.setStatusText(
+                                "Mission in progress...");
         }
 
-        view.getStartButton()
-                .setEnabled(true);
+        private void startExactTimeTimer() {
 
-        view.getPauseButton()
-                .setEnabled(false);
+                Calendar target = Calendar.getInstance();
+                target.set(Calendar.HOUR_OF_DAY, view.getTargetHour());
+                target.set(Calendar.MINUTE, view.getTargetMinute());
+                target.set(Calendar.SECOND, view.getTargetSecond());
+                target.set(Calendar.MILLISECOND, 0);
 
-        view.setStatusText(
-                "⏸ Mission paused"
-        );
-    }
+                if (!target.getTime().after(new Date())) {
+                        view.showWarning(
+                                        "Ora selectată a trecut. Alege o oră viitoare.",
+                                        "Ora invalidă");
+                        return;
+                }
+                timerService.scheduleAt(
+                                target.getTime(),
+                                () -> SwingUtilities.invokeLater(this::finishExactTimer));
 
-    // RESET
+                view.addHistoryEntry(view.getTargetHour(), view.getTargetMinute(), view.getTargetSecond());
 
-    private void resetTimer(ActionEvent e) {
-
-        // Oprim sarcina curentă
-        if (timerTask != null) {
-            timerTask.cancel();
+                view.getStartButton().setEnabled(true);
+                view.setExactTimeSpinnersEnabled(true);
+                view.setStatusText("Programarea a fost adăugată. Poți adăuga încă una.");
         }
 
-        // Resetăm modelul
-        model.reset();
-
-        view.setTimerText("00:00");
-
-        view.setProgress(0);
-
-        view.setStatusText(
-                "Ready for launch"
-        );
-
-        view.getStartButton()
-                .setEnabled(true);
-
-        view.getPauseButton()
-                .setEnabled(false);
-
-        view.setSpinnersEnabled(true);
-    }
-
-    // FINALIZARE TIMER
-
-    private void finishTimer() {
-
-        // Oprim sarcina
-        if (timerTask != null) {
-            timerTask.cancel();
+        private void finishExactTimer() {
+                view.setStatusText("O programare a fost declanșată.");
+                view.showMessage(
+                                "🚀 A sosit ora programată!\nNava spațială a decolat.",
+                                "Mission Complete");
         }
 
-        view.getStartButton()
-                .setEnabled(true);
+        private void switchTimer() {
+                boolean showExactTime = !view.isExactTimeVisible();
+                timerService.cancelAll();
+                view.animateToTimer(showExactTime);
+                view.setPauseButtonVisible(!showExactTime);
+                view.getStartButton().setEnabled(true);
+                view.getPauseButton().setEnabled(false);
+                view.setSpinnersEnabled(true);
+                view.setExactTimeSpinnersEnabled(true);
+                view.setStatusText(showExactTime
+                                ? "Setează ora exactă de lansare"
+                                : "Ready for launch");
+        }
 
-        view.getPauseButton()
-                .setEnabled(false);
+        // ACTUALIZARE TIMER
 
-        view.setSpinnersEnabled(true);
+        private void updateTimer() {
 
-        view.setStatusText(
-                "Mission completed!"
-        );
+                // Verificăm dacă mai există timp
+                if (!model.isFinished()) {
 
-        view.setProgress(100);
+                        // Scădem o secundă
+                        model.tick();
 
-        // Afișăm mesajul final
-        view.showMessage(
-                "🚀 Timpul a expirat!\n"
-                        + "Nava spațială a decolat.",
-                "Mission Complete"
-        );
-    }
+                        // Actualizăm afișarea
+                        updateDisplay();
+
+                } else {
+
+                        // Timpul a expirat
+                        finishTimer();
+                }
+        }
+
+        // ACTUALIZARE AFIȘARE
+
+        private void updateDisplay() {
+
+                int minutes = model.getMinutes();
+
+                int seconds = model.getSeconds();
+
+                // Formatăm timpul MM:SS
+                String time = String.format(
+                                "%02d:%02d",
+                                minutes,
+                                seconds);
+
+                view.setTimerText(time);
+
+                // Actualizăm bara de progres
+                view.setProgress(
+                                model.getProgress());
+        }
+
+        // PAUZĂ
+
+        private void pauseTimer(ActionEvent e) {
+
+                // Oprim sarcina curentă
+                timerService.cancelRepeating();
+
+                view.getStartButton()
+                                .setEnabled(true);
+
+                view.getPauseButton()
+                                .setEnabled(false);
+
+                view.setStatusText(
+                                "⏸ Mission paused");
+        }
+
+        // RESET
+
+        private void resetTimer(ActionEvent e) {
+
+                // Oprim sarcina curentă
+                timerService.cancelAll();
+
+                // Resetăm modelul
+                model.reset();
+                view.resetExactTimeToCurrent();
+
+                view.setTimerText("00:00");
+
+                view.setProgress(0);
+
+                view.setStatusText(
+                                "Ready for launch");
+
+                view.getStartButton()
+                                .setEnabled(true);
+
+                view.getPauseButton()
+                                .setEnabled(false);
+
+                view.setSpinnersEnabled(true);
+                view.setExactTimeSpinnersEnabled(true);
+        }
+
+        // FINALIZARE TIMER
+
+        private void finishTimer() {
+
+                // Oprim sarcina
+                timerService.cancelRepeating();
+
+                view.getStartButton()
+                                .setEnabled(true);
+
+                view.getPauseButton()
+                                .setEnabled(false);
+
+                view.setSpinnersEnabled(true);
+
+                view.setStatusText(
+                                "Mission completed!");
+
+                view.setProgress(100);
+
+                // Afișăm mesajul final
+                view.showMessage(
+                                "🚀 Timpul a expirat!\n"
+                                                + "Nava spațială a decolat.",
+                                "Mission Complete");
+        }
 }
