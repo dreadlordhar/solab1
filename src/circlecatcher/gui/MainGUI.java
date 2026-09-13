@@ -63,7 +63,22 @@ public class MainGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // FROM HERE WE ADD ONLY COMPONENTS TO EXISTENT PANELS
+        // set font size
+        Font bigFont = new Font("SansSerif", Font.PLAIN, 35);
 
+        JLabel timerLabel = new JLabel("Time: 0s");
+        timerLabel.setFont(bigFont);
+        timerPanel.add(timerLabel);
+
+        SpinnerNumberModel model = new SpinnerNumberModel(1000, 1, 10000, 50);
+        // 1000 ms default, 1 minimum, 10 seconds max, 50 ms spinning
+        JSpinner periodSpinner = new JSpinner(model);
+        periodSpinner.setFont(bigFont);
+        periodPanel.add(periodSpinner);
+
+        JButton startButton = new JButton("Start");
+        startButton.setFont(bigFont);
+        startPanel.add(startButton);
 
     }
 
