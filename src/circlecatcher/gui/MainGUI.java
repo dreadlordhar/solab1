@@ -1,12 +1,18 @@
 package circlecatcher.gui;
 
 import javax.swing.*;
+
+import circlecatcher.timers.Task;
+
 import java.awt.*;
+import java.util.Timer;
 
 public class MainGUI {
     private JFrame frame;
+    private final Timer mainTimer;
 
     public MainGUI() {
+        mainTimer = new Timer();
 
         frame = new JFrame("Circle Catcher 3000");
 
@@ -20,9 +26,11 @@ public class MainGUI {
         // add rightPanel to the frame
         frame.getContentPane().add(rightPanel, BorderLayout.EAST);
 
-        // create center panel
-        JPanel centerPanel = new JPanel();
+        // create center panel. We pass null so there won't be any layout,
+        // in order to draw dirrectly via coords of the CirclePanel.
+        JPanel centerPanel = new JPanel(null);
         centerPanel.setBackground(Color.CYAN);
+        centerPanel.add(new CirclePanel(10, 20, 300, 0xFFFFFF));
 
         // add centerPanel to the frame
         frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
@@ -70,16 +78,41 @@ public class MainGUI {
         timerLabel.setFont(bigFont);
         timerPanel.add(timerLabel);
 
-        SpinnerNumberModel model = new SpinnerNumberModel(1000, 1, 10000, 50);
-        // 1000 ms default, 1 minimum, 10 seconds max, 50 ms spinning
+        SpinnerNumberModel model = new SpinnerNumberModel(1000, 1, 10000, 1);
         JSpinner periodSpinner = new JSpinner(model);
         periodSpinner.setFont(bigFont);
         periodPanel.add(periodSpinner);
 
         JButton startButton = new JButton("Start");
         startButton.setFont(bigFont);
-        startPanel.add(startButton);
 
+        // For colleagues. () -> {} defines an "lambda function", as in,
+        // an anonymous functional interface that you pass as a callback for the button.
+        // In other words, what you want that button to do in the first
+        // place, without defining a new function/method/etc.
+
+        startButton.addActionListener((e) -> {
+            long startTime = System.currentTimeMillis();
+
+            mainTimer.schedule( // TODO: REMOVE THIS ENTIRE LAMBDA TO SEPARATE CLASS
+                Task.set(() -> {
+                    long gameDuration = (Integer)periodSpinner.getValue() * 1000L;
+                    long elapsed = System.currentTimeMillis() - startTime;
+                    long seconds = elapsed / 1000;
+
+                    SwingUtilities.invokeLater(() -> {
+                        timerLabel.setText("Time: " + seconds + "s");
+                    });
+
+                    if (elapsed >= gameDuration) {
+                        mainTimer.cancel();
+                    }
+                }),
+                0,
+                100
+            );
+        });
+        startPanel.add(startButton);
     }
 
     public void run() {

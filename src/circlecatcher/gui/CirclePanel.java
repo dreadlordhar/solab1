@@ -28,8 +28,10 @@ public class CirclePanel extends JPanel {
                 double dx = e.getX() - centerX;
                 double dy = e.getY() - centerY;
 
-                if (dx * dx + dy * dy <= (diam / 2) * (diam / 2))
+                if (dx * dx + dy * dy <= (diam / 2) * (diam / 2)) {
+                    // TODO: Make stuff work, now it just destroys itself
                     destroy();
+                }
             }
         });
     }
