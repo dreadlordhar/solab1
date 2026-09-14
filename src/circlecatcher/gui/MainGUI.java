@@ -8,7 +8,7 @@ public class MainGUI {
 
     public MainGUI() {
 
-        frame = new JFrame("Hello World Java Swing");
+        frame = new JFrame("Circle Catcher 3000");
 
         // create right panel
         JPanel rightPanel = new JPanel();
