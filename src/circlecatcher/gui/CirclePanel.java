@@ -1,7 +1,9 @@
 package circlecatcher.gui;
 
 import javax.swing.JPanel;
+
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.*;
 
 public class CirclePanel extends JPanel {
@@ -16,6 +18,20 @@ public class CirclePanel extends JPanel {
 
         setBounds((int)x, (int)y, (int)diam, (int)diam);
         setOpaque(false);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                double centerX = diam / 2;
+                double centerY = diam / 2;
+
+                double dx = e.getX() - centerX;
+                double dy = e.getY() - centerY;
+
+                if (dx * dx + dy * dy <= (diam / 2) * (diam / 2))
+                    destroy();
+            }
+        });
     }
 
     protected void paintComponent(Graphics g) {
@@ -32,6 +48,15 @@ public class CirclePanel extends JPanel {
             g2.draw(circle);
         } finally {
             g2.dispose();
+        }
+    }
+
+    private void destroy() {
+        Container parent = getParent();
+
+        if (parent != null) {
+            parent.remove(this);
+            parent.repaint();
         }
     }
 }
