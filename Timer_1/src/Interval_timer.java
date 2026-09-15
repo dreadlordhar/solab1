@@ -19,7 +19,7 @@ class Interval_timer extends TimerTask {
         JOptionPane.showMessageDialog(
                 null,
                 "Timpul a expirat!",
-                "Timer",
+                "Timer cu interval",
                 JOptionPane.INFORMATION_MESSAGE
         );
 
