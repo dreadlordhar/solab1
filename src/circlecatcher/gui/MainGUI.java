@@ -100,25 +100,35 @@ public class MainGUI {
         // place, without defining a new function/method/etc.
 
         startButton.addActionListener((e) -> {
-            long startTime = System.currentTimeMillis();
+            if (!gameRunning) {
+                // --- START the game ---
+                gameRunning = true;
+                gameStartTime = System.currentTimeMillis();
+                gameDuration = 20000; // 20 seconds for testing
+                score = 0;
+                startButton.setText("Stop");
 
-            mainTimer.schedule( // TODO: REMOVE THIS ENTIRE LAMBDA TO SEPARATE CLASS
-                Task.set(() -> {
-                    long gameDuration = (Integer)periodSpinner.getValue() * 1000L;
-                    long elapsed = System.currentTimeMillis() - startTime;
-                    long seconds = elapsed / 1000;
+                // schedule countdown timer (ticks every 100ms)
+                mainTimer.schedule(
+                    Task.set(() -> {
+                        long elapsed = System.currentTimeMillis() - gameStartTime;
+                        long remaining = (gameDuration - elapsed) / 1000;
 
-                    SwingUtilities.invokeLater(() -> {
-                        timerLabel.setText("Time: " + seconds + "s");
-                    });
+                        SwingUtilities.invokeLater(() -> {
+                            timerLabel.setText("Time: " + remaining + "s");
+                        });
 
-                    if (elapsed >= gameDuration) {
-                        mainTimer.cancel();
-                    }
-                }),
-                0,
-                100
-            );
+                        if (elapsed >= gameDuration) {
+                            stopGame(startButton, timerLabel);
+                        }
+                    }),
+                    0,
+                    100
+                );
+            } else {
+                // --- STOP the game (manual quit) ---
+                stopGame(startButton, timerLabel);
+            }
         });
         startPanel.add(startButton);
     }
@@ -127,5 +137,22 @@ public class MainGUI {
         // display it
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void stopGame(JButton startButton, JLabel timerLabel) {
+        gameRunning = false;
+        mainTimer.cancel();
+
+        // remove all circles from the game area
+        centerPanel.removeAll();
+        centerPanel.repaint();
+
+        // reset UI
+        startButton.setText("Start");
+        timerLabel.setText("Time: 0s");
+
+        // teacher requirement: app closes when game ends
+        frame.dispose();
+        System.exit(0);
     }
 }
