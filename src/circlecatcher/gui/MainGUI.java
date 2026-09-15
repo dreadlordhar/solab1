@@ -10,6 +10,14 @@ import java.util.Timer;
 public class MainGUI {
     private JFrame frame;
     private final Timer mainTimer;
+    private JPanel centerPanel;
+    // added it here as a class variable so it's accessible by the circle spawner
+    // game related variables for time and score tracking
+    private boolean gameRunning;
+    private int score;
+    private long gameDuration;
+    private long gameStartTime;
+
 
     public MainGUI() {
         mainTimer = new Timer();
@@ -28,9 +36,9 @@ public class MainGUI {
 
         // create center panel. We pass null so there won't be any layout,
         // in order to draw dirrectly via coords of the CirclePanel.
-        JPanel centerPanel = new JPanel(null);
+        centerPanel = new JPanel(null);
         centerPanel.setBackground(Color.CYAN);
-        centerPanel.add(new CirclePanel(10, 20, 300, 0xFFFFFF));
+
 
         // add centerPanel to the frame
         frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
