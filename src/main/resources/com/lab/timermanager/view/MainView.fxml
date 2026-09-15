@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lab.timermanager.controller.MainController"
+            styleClass="root-pane">
+
+    <top>
+        <VBox styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <padding>
+                    <Insets top="28" right="32" bottom="20" left="32"/>
+                </padding>
+                <VBox spacing="4">
+                    <Label text="Timer Manager" styleClass="app-title"/>
+                    <Label text="Timer / TimerTask demo — planificare a activitatii proceselor"
+                           styleClass="app-subtitle"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="newTimerButton" text="+ New Timer" styleClass="primary-button"
+                        onAction="#onNewTimer"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" styleClass="content-scroll">
+            <content>
+                <VBox>
+                    <padding>
+                        <Insets top="8" right="32" bottom="32" left="32"/>
+                    </padding>
+                    <Label fx:id="emptyStateLabel"
+                           text="Apasa &quot;+ New Timer&quot; pentru a adauga un timer nou."
+                           styleClass="empty-state"/>
+                    <FlowPane fx:id="timerContainer" hgap="20" vgap="20" styleClass="timer-container"/>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

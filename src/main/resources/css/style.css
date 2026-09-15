@@ -1,0 +1,210 @@
+/*
+ * Timer Manager - stylesheet
+ * Design minimalist: fundal alb/perlat, accent portocaliu, carduri rotunjite.
+ * Toata prezentarea vizuala este definita aici, separat de logica Java.
+ */
+
+.root {
+    -fx-bg: #FAF9F6;            /* fundal principal - off-white / pearl */
+    -fx-surface: #FFFFFF;       /* fundal carduri */
+    -fx-accent-orange: #FF7A29;
+    -fx-accent-orange-dark: #E8661C;
+    -fx-text-primary: #24211D;
+    -fx-text-secondary: #79746C;
+    -fx-border-soft: #ECE8E2;
+
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-background-color: -fx-bg;
+}
+
+.root-pane {
+    -fx-background-color: -fx-bg;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: transparent transparent -fx-border-soft transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.app-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.primary-button {
+    -fx-background-color: -fx-accent-orange;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 22 10 22;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: -fx-accent-orange-dark;
+}
+
+/* ---------- Content ---------- */
+
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.content-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.empty-state {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 14px;
+    -fx-padding: 40 0 0 0;
+}
+
+.timer-container {
+    -fx-padding: 12 0 0 0;
+}
+
+/* ---------- Timer Card ---------- */
+
+.timer-card {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 16;
+    -fx-border-color: -fx-border-soft;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(36,33,29,0.06), 14, 0, 0, 4);
+}
+
+.card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.card-details {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.field-caption {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-weight: bold;
+}
+
+.countdown-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-accent-orange;
+}
+
+/* Type badges */
+
+.type-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 20;
+    -fx-text-fill: white;
+}
+
+.badge-delay {
+    -fx-background-color: #4C8DFF;
+}
+
+/* Status badges */
+
+.status-badge {
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 12 5 12;
+    -fx-background-radius: 20;
+}
+
+.status-running {
+    -fx-background-color: #E6F6EC;
+    -fx-text-fill: #1E9E4E;
+}
+
+.status-completed {
+    -fx-background-color: #EDEBFB;
+    -fx-text-fill: #6247C9;
+}
+
+.status-stopped {
+    -fx-background-color: #F5F0EC;
+    -fx-text-fill: #8A8377;
+}
+
+/* Action buttons */
+
+.action-button {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.start-button {
+    -fx-background-color: -fx-accent-orange;
+    -fx-text-fill: white;
+}
+
+.start-button:hover {
+    -fx-background-color: -fx-accent-orange-dark;
+}
+
+.start-button:disabled {
+    -fx-background-color: #F2DCC9;
+    -fx-text-fill: white;
+    -fx-opacity: 0.8;
+}
+
+.stop-button {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border-soft;
+    -fx-border-width: 1.5;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.stop-button:hover {
+    -fx-border-color: -fx-accent-orange;
+    -fx-text-fill: -fx-accent-orange;
+}
+
+.delete-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #C6432E;
+}
+
+.delete-button:hover {
+    -fx-background-color: #FBE9E6;
+}
+
+/* ---------- Dialog ---------- */
+
+.new-timer-dialog .header-panel {
+    -fx-background-color: -fx-surface;
+}
+
+.new-timer-dialog .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 12.5px;
+}
+
+.new-timer-dialog .dialog-pane {
+    -fx-background-color: -fx-surface;
+}
