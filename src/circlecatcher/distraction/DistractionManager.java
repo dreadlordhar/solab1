@@ -132,11 +132,25 @@ public class DistractionManager {
     }
 
     private BufferedImage loadImage(String path) {
-        // TODO
-        return null;
+        try {
+            InputStream is = getClass().getResourceAsStream(path);
+            if (is == null) return null;
+            return ImageIO.read(is);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void playSound(String path) {
-        // TODO
+        try {
+            InputStream is = getClass().getResourceAsStream(path);
+            if (is == null) return;
+            AudioInputStream audio = AudioSystem.getAudioInputStream(is);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audio);
+            clip.start();
+        } catch (Exception e) {
+            // silently fail if sound missing
+        }
     }
 }
