@@ -97,6 +97,15 @@ public class DistractionManager {
         int y = random.nextInt(screen.height - 500);
         popup.setLocation(x, y);
 
+        // display the image
+        JLabel label = new JLabel(new ImageIcon(img));
+        popup.add(label);
+
+        // track it
+        openPopups.add(popup);
+
+        // show it
+        SwingUtilities.invokeLater(() -> popup.setVisible(true));
     }
 
     private BufferedImage loadImage(String path) {
