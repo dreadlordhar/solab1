@@ -26,9 +26,7 @@ public class DistractionManager {
 
     // File names for pop ups
     private final String[] memeNames = {
-        // "troll",
-        // "bruh",
-        // "sus"
+        "cat_laugh",
     };
 
     public void start(long gameDuration) {
