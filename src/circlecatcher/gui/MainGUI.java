@@ -4,6 +4,7 @@ import javax.swing.*;
 
 import circlecatcher.timers.Task;
 import circlecatcher.Score;
+import circlecatcher.distraction.DistractionManager;
 
 import java.awt.*;
 import java.util.Timer;
@@ -19,12 +20,14 @@ public class MainGUI {
     private Score score;
     private long gameDuration;
     private long gameStartTime;
+    private DistractionManager distractionManager;
 
 
     public MainGUI() {
         mainTimer = new Timer();
         spawnTimer = new Timer();
         score = new Score(0);
+        distractionManager = new DistractionManager();
 
         frame = new JFrame("Circle Catcher 3000");
 
@@ -154,6 +157,9 @@ public class MainGUI {
                     spawnInterval
                 );
 
+                // start distractions
+                distractionManager.start(gameDuration);
+
 
             } else {
                 // --- STOP the game (manual quit) ---
@@ -173,6 +179,7 @@ public class MainGUI {
         gameRunning = false;
         mainTimer.cancel();
         spawnTimer.cancel();
+        distractionManager.stop();
 
         // remove all circles from the game area
         centerPanel.removeAll();
