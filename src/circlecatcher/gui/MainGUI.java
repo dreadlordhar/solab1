@@ -10,6 +10,7 @@ import java.util.Timer;
 public class MainGUI {
     private JFrame frame;
     private final Timer mainTimer;
+    private Timer spawnTimer;
     private JPanel centerPanel;
     // added it here as a class variable so it's accessible by the circle spawner
     // game related variables for time and score tracking
@@ -21,6 +22,7 @@ public class MainGUI {
 
     public MainGUI() {
         mainTimer = new Timer();
+        spawnTimer = new Timer();
 
         frame = new JFrame("Circle Catcher 3000");
 
@@ -125,6 +127,21 @@ public class MainGUI {
                     0,
                     100
                 );
+
+                int spawnInterval = (Integer) periodSpinner.getValue();
+
+                // here we spwan the circles with the periodic timer
+                spawnTimer.schedule(
+                    Task.set(() -> {
+                        if (gameRunning) {
+                            spawnCircle();
+                        }
+                    }),
+                    0,
+                    spawnInterval
+                );
+
+
             } else {
                 // --- STOP the game (manual quit) ---
                 stopGame(startButton, timerLabel);
@@ -142,6 +159,7 @@ public class MainGUI {
     private void stopGame(JButton startButton, JLabel timerLabel) {
         gameRunning = false;
         mainTimer.cancel();
+        spawnTimer.cancel();
 
         // remove all circles from the game area
         centerPanel.removeAll();
@@ -155,4 +173,25 @@ public class MainGUI {
         frame.dispose();
         System.exit(0);
     }
+
+    private void spawnCircle() {
+        int diameter = 60;
+        int padding = 5;
+
+        int maxX = centerPanel.getWidth() - diameter;
+        int maxY = centerPanel.getHeight() - diameter;
+
+        if (maxX <= 0 || maxY <= 0) return;
+
+        int x = (int) (Math.random() * maxX);
+        int y = (int) (Math.random() * maxY);
+
+        SwingUtilities.invokeLater(() -> {
+            centerPanel.add(new CirclePanel(x, y, diameter, 0xFFFFFF));
+            centerPanel.revalidate();
+            centerPanel.repaint();
+        });
+    }
 }
+
+
