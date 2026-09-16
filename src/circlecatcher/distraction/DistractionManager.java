@@ -106,6 +106,17 @@ public class DistractionManager {
 
         // show it
         SwingUtilities.invokeLater(() -> popup.setVisible(true));
+
+        // auto-close after 3-5 seconds
+        int duration = 3000 + random.nextInt(2001);
+        Timer autoClose = new Timer();
+        autoClose.schedule(Task.set(() -> {
+            SwingUtilities.invokeLater(() -> {
+                popup.dispose();
+                openPopups.remove(popup);
+            });
+        }), duration);
+        popupTimers.add(autoClose);
     }
 
     private BufferedImage loadImage(String path) {
