@@ -3,6 +3,7 @@ package circlecatcher.gui;
 import javax.swing.*;
 
 import circlecatcher.timers.Task;
+import circlecatcher.Score;
 
 import java.awt.*;
 import java.util.Timer;
@@ -15,7 +16,7 @@ public class MainGUI {
     // added it here as a class variable so it's accessible by the circle spawner
     // game related variables for time and score tracking
     private boolean gameRunning;
-    private int score;
+    private Score score;
     private long gameDuration;
     private long gameStartTime;
 
@@ -23,6 +24,7 @@ public class MainGUI {
     public MainGUI() {
         mainTimer = new Timer();
         spawnTimer = new Timer();
+        score = new Score(0);
 
         frame = new JFrame("Circle Catcher 3000");
 
@@ -67,8 +69,15 @@ public class MainGUI {
         startPanel.setMaximumSize(dimPanel);
         startPanel.setBackground(Color.YELLOW);
 
+        JPanel scorePanel = new JPanel();
+        scorePanel.setPreferredSize(dimPanel);
+        scorePanel.setMaximumSize(dimPanel);
+        scorePanel.setBackground(Color.YELLOW);
+
 
         // add them to rightPanel
+        rightPanel.add(scorePanel);
+        rightPanel.add(Box.createVerticalStrut(25));
         rightPanel.add(timerPanel);
         rightPanel.add(Box.createVerticalStrut(25)); // 25px gap
         rightPanel.add(periodPanel);
@@ -87,6 +96,10 @@ public class MainGUI {
         JLabel timerLabel = new JLabel("Time: 0s");
         timerLabel.setFont(bigFont);
         timerPanel.add(timerLabel);
+
+        JLabel scoreLabel = new JLabel("Score: 0");
+        scoreLabel.setFont(bigFont);
+        scorePanel.add(scoreLabel);
 
         SpinnerNumberModel model = new SpinnerNumberModel(1000, 1, 10000, 1);
         JSpinner periodSpinner = new JSpinner(model);
@@ -107,7 +120,6 @@ public class MainGUI {
                 gameRunning = true;
                 gameStartTime = System.currentTimeMillis();
                 gameDuration = 20000; // 20 seconds for testing
-                score = 0;
                 startButton.setText("Stop");
 
                 // schedule countdown timer (ticks every 100ms)
@@ -118,6 +130,7 @@ public class MainGUI {
 
                         SwingUtilities.invokeLater(() -> {
                             timerLabel.setText("Time: " + remaining + "s");
+                            scoreLabel.setText("Score: " + score.getValue());
                         });
 
                         if (elapsed >= gameDuration) {
@@ -187,7 +200,7 @@ public class MainGUI {
         int y = (int) (Math.random() * maxY);
 
         SwingUtilities.invokeLater(() -> {
-            centerPanel.add(new CirclePanel(x, y, diameter, 0xFFFFFF));
+            centerPanel.add(new CirclePanel(x, y, diameter, 0xFFFFFF, score));
             centerPanel.revalidate();
             centerPanel.repaint();
         });

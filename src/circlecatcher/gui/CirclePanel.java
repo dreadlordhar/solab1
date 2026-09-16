@@ -2,15 +2,21 @@ package circlecatcher.gui;
 
 import javax.swing.JPanel;
 
+import circlecatcher.Score;
+import circlecatcher.timers.Task;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 
+import java.util.Timer;
+
 public class CirclePanel extends JPanel {
     public final double x, y, diam;
+    public final Timer timer;
     public final int color;
 
-    public CirclePanel(double x, double y, double diameter, int color) {
+    public CirclePanel(double x, double y, double diameter, int color, Score score) {
         this.x = x;
         this.y = y;
         this.color = color;
@@ -18,6 +24,12 @@ public class CirclePanel extends JPanel {
 
         setBounds((int)x, (int)y, (int)diam, (int)diam);
         setOpaque(false);
+
+        timer = new Timer();
+        timer.schedule(Task.set(() -> {
+            score.addToScore(-1);
+            destroy();
+        }), 2000); // 2 seconds
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -29,7 +41,7 @@ public class CirclePanel extends JPanel {
                 double dy = e.getY() - centerY;
 
                 if (dx * dx + dy * dy <= (diam / 2) * (diam / 2)) {
-                    // TODO: Make stuff work, now it just destroys itself
+                    score.addToScore(2);
                     destroy();
                 }
             }
