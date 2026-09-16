@@ -30,5 +30,5 @@ public class Interval_timer extends TimerTask {
         timer = new Timer();
         timer.schedule(this, secunde * 1000L);
     }
+}
 
-   
