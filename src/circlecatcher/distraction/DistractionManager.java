@@ -10,7 +10,13 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 import java.io.InputStream;
-import java.util.*;
+// did some specific imports to solve ambiguous bug
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+
 import circlecatcher.timers.Task;
 
 public class DistractionManager {
@@ -83,6 +89,7 @@ public class DistractionManager {
     }
 
     private void showPopup() {
+        if (memeNames.length == 0) return;
         String name = memeNames[random.nextInt(memeNames.length)];
         BufferedImage img = loadImage("/resources/images/" + name + ".png");
         if (img == null) return;
@@ -96,8 +103,8 @@ public class DistractionManager {
 
         // position randomiser
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = random.nextInt(screen.width - 500);
-        int y = random.nextInt(screen.height - 500);
+        int x = Math.max(0, random.nextInt(Math.max(1, screen.width - 500)));
+        int y = Math.max(0, random.nextInt(Math.max(1, screen.height - 500)));
         popup.setLocation(x, y);
 
         // display the image
