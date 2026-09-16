@@ -110,6 +110,9 @@ public class DistractionManager {
         // show it
         SwingUtilities.invokeLater(() -> popup.setVisible(true));
 
+        // play paired sound on appearance
+        playSound("/resources/sounds/" + name + ".wav");
+
         // auto-close after 3-5 seconds
         int duration = 3000 + random.nextInt(2001);
         Timer autoClose = new Timer();
