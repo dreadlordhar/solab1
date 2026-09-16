@@ -26,7 +26,24 @@ public class DistractionManager {
     };
 
     public void start(long gameDuration) {
-        // TODO
+        if (random.nextDouble() < 0.10) return; // if activated, no pop ups
+
+        int perMinute = 3 + random.nextInt(2); // 3 or 4 pop ups per minute
+        int total = (int) ((gameDuration / 1000.0) / 60.0 * perMinute);
+        if (total < 1) total = 1;
+
+        // generate triggers
+        List<Long> triggers = generateTriggerTimes(gameDuration, total);
+
+        // timer scheduling
+        for (long delay : triggers) {
+            Timer t = new Timer();
+            t.schedule(
+                Task.set(() -> showPopup()),
+                delay
+            );
+            popupTimers.add(t);
+        }
     }
 
     public void stop() {
@@ -34,8 +51,32 @@ public class DistractionManager {
     }
 
     private List<Long> generateTriggerTimes(long gameDuration, int count) {
-        // TODO
-        return null;
+        List<Long> times = new ArrayList<>();
+        long minGap = 5000; // 5 seconds in ms
+
+        for (int i = 0; i < count; i++) {
+            int maxAttempts = 100;
+            for (int attempt = 0; attempt < maxAttempts; attempt++) {
+                long candidate = (long) (random.nextDouble() * (gameDuration - 5000));
+                if (candidate < 1000) candidate = 1000;
+
+                boolean tooClose = false;
+                for (long existing : times) {
+                    if (Math.abs(existing - candidate) < minGap) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (!tooClose) {
+                    times.add(candidate);
+                    break; // move to next distraction
+                }
+            }
+        }
+
+        Collections.sort(times);
+        return times;
     }
 
     private void showPopup() {
