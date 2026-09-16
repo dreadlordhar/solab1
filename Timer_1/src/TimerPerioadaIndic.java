@@ -1,35 +1,49 @@
+import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class TimerPerioadaIndic {
-    public static void main(String[] args) {
-        // variabile
-        final int VAL_MIN = 0;
-        final int VAL_MAX = 100;
-        final int VAL_INIT = 0;
-        final int PERIOADA = 100; // 10 pași per secundă
 
-        // Construirea timer-ului
-        Timer timer = new Timer();
+    private final int VAL_MIN = 0;
+    private final int VAL_MAX = 100;
+    private final int PERIOADA = 100; // 10 pași pe secundă
 
+    private JSlider slider;
+    private long durataMilisecunde;
+    private Timer timer;
+
+    public TimerPerioadaIndic(JSlider slider, long durataMilisecunde) {
+        this.slider = slider;
+        this.durataMilisecunde = durataMilisecunde;
+    }
+
+    public void start() {
+        timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
-            int valoareCurenta = VAL_INIT;
+            int valoareCurenta = VAL_MIN;
             long timpStart = System.currentTimeMillis();
 
+            @Override
             public void run() {
                 valoareCurenta += 1;
                 if (valoareCurenta > VAL_MAX) {
                     valoareCurenta = VAL_MIN; // resetarea la minim
                 }
 
-                System.out.println("Valoare curentă: " + valoareCurenta);
+                int valFinal = valoareCurenta;
+                SwingUtilities.invokeLater(() -> slider.setValue(valFinal));
 
-                // Timer-ul se va opri dupa 13 secunde
-                if (System.currentTimeMillis() - timpStart >= 13_000) {
+                if (System.currentTimeMillis() - timpStart >= durataMilisecunde) {
                     timer.cancel();
-                    System.out.println("Au trecut cele 13 secunde!");
+                    System.out.println("Timer 2 s-a terminat!");
                 }
             }
         }, 0, PERIOADA);
+    }
+
+    public void stop() {
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 }
