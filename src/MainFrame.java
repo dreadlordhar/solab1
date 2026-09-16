@@ -11,10 +11,14 @@ public class MainFrame extends JFrame {
         super("SO Lab 1 - IA-242_9");
         TimerInterval interval = new TimerInterval();
         TimerFixedTime momentFix = new TimerFixedTime();
-        JPanel continut = new JPanel(new GridLayout(2, 1, 10, 10));
+        TimerPeriodic periodic = new TimerPeriodic();
+        TimerConditionat conditionat = new TimerConditionat(periodic);
+        JPanel continut = new JPanel(new GridLayout(4, 1, 10, 10));
         continut.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         continut.add(interval);
         continut.add(momentFix);
+        continut.add(periodic);
+        continut.add(conditionat);
         setContentPane(continut);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -22,6 +26,8 @@ public class MainFrame extends JFrame {
             public void windowClosing(WindowEvent e) {
                 interval.opreste();
                 momentFix.opreste();
+                periodic.opreste();
+                conditionat.opreste();
             }
         });
         pack();
