@@ -117,6 +117,18 @@ public class DistractionManager {
             });
         }), duration);
         popupTimers.add(autoClose);
+
+        // click to close + low chance meme sound
+        popup.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (random.nextDouble() < 0.15) {
+                    playSound("/resources/sounds/" + name + ".wav");
+                }
+                popup.dispose();
+                openPopups.remove(popup);
+            }
+        });
     }
 
     private BufferedImage loadImage(String path) {
