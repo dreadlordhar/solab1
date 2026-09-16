@@ -47,7 +47,10 @@ public class DistractionManager {
     }
 
     public void stop() {
-        // TODO
+        for (Timer t : popupTimers) t.cancel();
+        popupTimers.clear();
+        for (JDialog p : openPopups) p.dispose();
+        openPopups.clear();
     }
 
     private List<Long> generateTriggerTimes(long gameDuration, int count) {
