@@ -1,14 +1,15 @@
 package com.lab.timermanager.model;
 
 /**
- * Tipul de planificare implementat de aceasta parte a temei (lucru in pereche):
- *  - DELAY -> reactioneaza la un anumit interval de timp (o singura data, dupa un delay)
- * <p>
- * Celelalte doua tipuri (Specific Time, Periodic) sunt implementate de coleg,
- * in cealalta jumatate a proiectului.
+ * Cele 3 moduri de planificare cerute in lucrarea de laborator:
+ *  - DELAY         -> reactioneaza la un anumit interval de timp (o singura data, dupa un delay)
+ *  - SPECIFIC_TIME -> reactioneaza la un anumit timp (data/ora exacta)
+ *  - PERIODIC      -> reactioneaza cu o perioada indicata (executie repetata)
  */
 public enum TimerType {
-    DELAY("Delay");
+    DELAY("Delay"),
+    SPECIFIC_TIME("Specific Time"),
+    PERIODIC("Periodic");
 
     private final String displayName;
 

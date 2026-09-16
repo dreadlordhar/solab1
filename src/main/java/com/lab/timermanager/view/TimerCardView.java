@@ -2,6 +2,7 @@ package com.lab.timermanager.view;
 
 import com.lab.timermanager.model.TimerModel;
 import com.lab.timermanager.model.TimerStatus;
+import com.lab.timermanager.model.TimerType;
 import com.lab.timermanager.service.TimerService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,14 +13,16 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.time.format.DateTimeFormatter;
+
 /**
  * Card vizual pentru un singur timer. Toata logica de start/stop/delete este
  * delegata catre TimerService - cardul doar afiseaza starea (bind la proprietatile modelului)
  * si reactioneaza la click-uri pe butoane.
- * <p>
- * Aceasta versiune afiseaza doar timere de tip DELAY.
  */
 public class TimerCardView extends VBox {
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private final Label statusBadge = new Label();
 
@@ -33,20 +36,19 @@ public class TimerCardView extends VBox {
         nameLabel.textProperty().bind(model.nameProperty());
         nameLabel.getStyleClass().add("card-title");
 
-        Label typeLabel = new Label(model.getType().getDisplayName());
-        typeLabel.getStyleClass().addAll("type-badge", "badge-delay");
+        Label typeLabel = new Label(badgeTextFor(model.getType()));
+        typeLabel.getStyleClass().addAll("type-badge", typeStyleClass(model.getType()));
 
         HBox header = new HBox(10, nameLabel, spacer(), typeLabel);
         header.setAlignment(Pos.CENTER_LEFT);
 
         // --- Detalii de planificare (fixe, setate la creare) ---
-        Label detailsLabel = new Label(
-                "Se executa o singura data, dupa " + model.getDelaySeconds() + " secunde.");
+        Label detailsLabel = new Label(buildDetailsText(model));
         detailsLabel.getStyleClass().add("card-details");
         detailsLabel.setWrapText(true);
 
-        // --- Timp ramas (actualizat live de TimerService) ---
-        Label nextExecCaption = new Label("Timp ramas");
+        // --- Timp ramas / urmatoarea executie (actualizat live de TimerService) ---
+        Label nextExecCaption = new Label("Timp ramas / urmatoarea executie");
         nextExecCaption.getStyleClass().add("field-caption");
 
         Label nextExecValue = new Label();
@@ -78,7 +80,7 @@ public class TimerCardView extends VBox {
             }
         });
 
-        // Disable Start when already running
+        // Disable Start when already running/completed one-shot timers appropriately
         startButton.disableProperty().bind(model.statusProperty().isEqualTo(TimerStatus.RUNNING));
         stopButton.disableProperty().bind(model.statusProperty().isNotEqualTo(TimerStatus.RUNNING));
 
@@ -96,6 +98,27 @@ public class TimerCardView extends VBox {
         Region region = new Region();
         HBox.setHgrow(region, Priority.ALWAYS);
         return region;
+    }
+
+    private String badgeTextFor(TimerType type) {
+        return type.getDisplayName();
+    }
+
+    private String typeStyleClass(TimerType type) {
+        return switch (type) {
+            case DELAY -> "badge-delay";
+            case SPECIFIC_TIME -> "badge-specific";
+            case PERIODIC -> "badge-periodic";
+        };
+    }
+
+    private String buildDetailsText(TimerModel model) {
+        return switch (model.getType()) {
+            case DELAY -> "Se executa o singura data, dupa " + model.getDelaySeconds() + " secunde.";
+            case SPECIFIC_TIME -> "Se executa la data/ora: "
+                    + (model.getSpecificDateTime() != null ? model.getSpecificDateTime().format(DATE_FMT) : "-");
+            case PERIODIC -> "Se repeta la fiecare " + model.getPeriodSeconds() + " secunde.";
+        };
     }
 
     private void updateStatusStyle(TimerStatus status) {

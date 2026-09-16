@@ -39,6 +39,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
+        // Oprim toate firele Timer active, ca aplicatia sa nu ramana "agatata" in fundal.
         if (controller != null) {
             controller.shutdown();
         }

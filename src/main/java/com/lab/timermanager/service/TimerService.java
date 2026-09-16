@@ -4,6 +4,10 @@ import com.lab.timermanager.model.TimerModel;
 import com.lab.timermanager.model.TimerStatus;
 import javafx.application.Platform;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -20,12 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Fiecare {@link TimerModel} pornit primeste propriul obiect Timer (fir de executie separat),
  * astfel incat mai multe timere pot rula independent si simultan.
  * <p>
- * Aceasta versiune implementeaza un singur mod de planificare - DELAY
- * (reactioneaza o singura data, dupa un interval de timp indicat de utilizator).
- * <p>
  * Pe langa timer-ele "de lucru" (create de utilizator), serviciul mai foloseste
  * un singur java.util.Timer suplimentar - "ticker"-ul - care ruleaza o data pe secunda
- * si actualizeaza pe GUI textul de tip "timp ramas".
+ * si actualizeaza pe GUI textul de tip "timp ramas / urmatoarea executie".
  */
 public class TimerService {
 
@@ -34,6 +35,9 @@ public class TimerService {
 
     /** Momentul (epoch millis) urmatoarei executii, folosit pentru afisarea numaratorii inverse. */
     private final Map<String, Long> nextFireAtMillis = new ConcurrentHashMap<>();
+
+    /** Perioada (ms) pentru timerele PERIODIC - folosita doar pentru afisare pe card. */
+    private final Map<String, Long> periodMillisById = new ConcurrentHashMap<>();
 
     /** Modelele urmarite curent de ticker (adica active/RUNNING). */
     private final Set<TimerModel> trackedModels = ConcurrentHashMap.newKeySet();
@@ -53,7 +57,7 @@ public class TimerService {
     }
 
     /**
-     * Porneste planificarea pentru un timer de tip DELAY.
+     * Porneste planificarea pentru un timer, in functie de tipul lui.
      * Foloseste efectiv clasa Timer si o subclasa/instanta anonima de TimerTask,
      * exact ca in exemplele din indrumar.
      */
@@ -66,13 +70,17 @@ public class TimerService {
         Timer timer = new Timer("timer-" + model.getName(), true);
         activeTimers.put(model.getId(), timer);
 
-        scheduleDelay(model, timer);
+        switch (model.getType()) {
+            case DELAY -> scheduleDelay(model, timer);
+            case SPECIFIC_TIME -> scheduleSpecificTime(model, timer);
+            case PERIODIC -> schedulePeriodic(model, timer);
+        }
 
         model.setStatus(TimerStatus.RUNNING);
         trackedModels.add(model);
     }
 
-    /** Reactioneaza dupa un anumit interval de timp (delay), o singura data. */
+    /** Tip 1: reactioneaza dupa un anumit interval de timp (delay), o singura data. */
     private void scheduleDelay(TimerModel model, Timer timer) {
         long delayMs = model.getDelaySeconds() * 1000L;
         nextFireAtMillis.put(model.getId(), System.currentTimeMillis() + delayMs);
@@ -85,13 +93,66 @@ public class TimerService {
                 Platform.runLater(() -> {
                     model.setStatus(TimerStatus.COMPLETED);
                     model.setNextExecutionText("Finalizat");
+                    model.incrementExecutionCount();
                 });
                 trackedModels.remove(model);
             }
         };
 
-        // Pas 3: planificam executia folosind metoda schedule(task, delay).
+        // Pas 3: planificam la executie folosind metoda schedule(task, delay).
         timer.schedule(task, delayMs);
+    }
+
+    /** Tip 2: reactioneaza la o data/ora exacta aleasa de utilizator. */
+    private void scheduleSpecificTime(TimerModel model, Timer timer) {
+        LocalDateTime target = model.getSpecificDateTime();
+        Date fireDate = Date.from(target.atZone(ZoneId.systemDefault()).toInstant());
+
+        // Daca ora aleasa a trecut deja azi, o programam pentru aceeasi ora, a doua zi
+        // (acelasi principiu ca in Exemplul 1 din indrumar, cu obiectul Calendar).
+        if (fireDate.before(new Date())) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fireDate);
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+            fireDate = cal.getTime();
+        }
+
+        nextFireAtMillis.put(model.getId(), fireDate.getTime());
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    model.setStatus(TimerStatus.COMPLETED);
+                    model.setNextExecutionText("Finalizat");
+                    model.incrementExecutionCount();
+                });
+                trackedModels.remove(model);
+            }
+        };
+
+        // Varianta schedule(TimerTask task, Date time) - executie la un moment exact.
+        timer.schedule(task, fireDate);
+    }
+
+    /** Tip 3: reactioneaza repetat, cu o perioada indicata de utilizator. */
+    private void schedulePeriodic(TimerModel model, Timer timer) {
+        long delayMs = 0L; // porneste imediat, apoi se repeta
+        long periodMs = model.getPeriodSeconds() * 1000L;
+        periodMillisById.put(model.getId(), periodMs);
+        nextFireAtMillis.put(model.getId(), System.currentTimeMillis() + periodMs);
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                nextFireAtMillis.put(model.getId(), System.currentTimeMillis() + periodMs);
+                Platform.runLater(model::incrementExecutionCount);
+            }
+        };
+
+        // scheduleAtFixedRate -> numar fix de executii pe unitatea de timp,
+        // recomandat pentru actiuni repetate (ex: MP3 Player / Exemplul 3 din indrumar).
+        timer.scheduleAtFixedRate(task, delayMs, periodMs);
     }
 
     /**
@@ -105,6 +166,7 @@ public class TimerService {
             timer.cancel();
         }
         nextFireAtMillis.remove(model.getId());
+        periodMillisById.remove(model.getId());
         trackedModels.remove(model);
 
         model.setStatus(TimerStatus.STOPPED);
@@ -116,7 +178,7 @@ public class TimerService {
         stopTimer(model);
     }
 
-    /** Opreste toate timerele si ticker-ul de UI - apelata la inchiderea aplicatiei. */
+    /** Oprește toate timerele si ticker-ul de UI - apelata la inchiderea aplicatiei. */
     public void shutdownAll() {
         activeTimers.values().forEach(Timer::cancel);
         activeTimers.clear();
@@ -138,7 +200,11 @@ public class TimerService {
                     continue;
                 }
                 long remainingMs = Math.max(0, nextFire - now);
-                model.setNextExecutionText(formatDuration(remainingMs));
+                String text = formatDuration(remainingMs);
+                if (model.getType() == com.lab.timermanager.model.TimerType.PERIODIC) {
+                    text += "  (executii: " + model.getExecutionCount() + ")";
+                }
+                model.setNextExecutionText(text);
             }
         });
     }

@@ -123,6 +123,14 @@
     -fx-background-color: #4C8DFF;
 }
 
+.badge-specific {
+    -fx-background-color: #8A5CF6;
+}
+
+.badge-periodic {
+    -fx-background-color: -fx-accent-orange;
+}
+
 /* Status badges */
 
 .status-badge {

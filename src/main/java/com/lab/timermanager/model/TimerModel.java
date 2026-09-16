@@ -2,15 +2,13 @@ package com.lab.timermanager.model;
 
 import javafx.beans.property.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
  * Modelul unui timer creat de utilizator din interfata grafica.
  * Nu contine nicio logica de planificare (asta e in service.TimerService) -
  * este doar starea afisata pe card si legata (bind) la UI.
- * <p>
- * Aceasta versiune contine doar tipul DELAY (reactioneaza o singura data,
- * dupa un interval de timp indicat de utilizator).
  */
 public class TimerModel {
 
@@ -20,11 +18,15 @@ public class TimerModel {
     private final ObjectProperty<TimerType> type = new SimpleObjectProperty<>();
     private final ObjectProperty<TimerStatus> status = new SimpleObjectProperty<>(TimerStatus.STOPPED);
 
-    // Parametru de planificare pentru DELAY
-    private final IntegerProperty delaySeconds = new SimpleIntegerProperty();
+    // Parametri de planificare, in functie de tip
+    private final IntegerProperty delaySeconds = new SimpleIntegerProperty();   // DELAY
+    private final IntegerProperty periodSeconds = new SimpleIntegerProperty();  // PERIODIC
+    private final ObjectProperty<LocalDateTime> specificDateTime = new SimpleObjectProperty<>(); // SPECIFIC_TIME
 
-    // Informatie afisata pe card: timpul ramas pana la executie
+    // Informatie afisata pe card: timpul ramas / urmatoarea executie
     private final StringProperty nextExecutionText = new SimpleStringProperty("-");
+    // Cate execuții a avut deja (relevant pentru PERIODIC)
+    private final IntegerProperty executionCount = new SimpleIntegerProperty(0);
 
     public TimerModel(String name, TimerType type) {
         this.name.set(name);
@@ -79,6 +81,32 @@ public class TimerModel {
         return delaySeconds;
     }
 
+    // --- periodSeconds ---
+    public int getPeriodSeconds() {
+        return periodSeconds.get();
+    }
+
+    public void setPeriodSeconds(int value) {
+        periodSeconds.set(value);
+    }
+
+    public IntegerProperty periodSecondsProperty() {
+        return periodSeconds;
+    }
+
+    // --- specificDateTime ---
+    public LocalDateTime getSpecificDateTime() {
+        return specificDateTime.get();
+    }
+
+    public void setSpecificDateTime(LocalDateTime value) {
+        specificDateTime.set(value);
+    }
+
+    public ObjectProperty<LocalDateTime> specificDateTimeProperty() {
+        return specificDateTime;
+    }
+
     // --- nextExecutionText ---
     public String getNextExecutionText() {
         return nextExecutionText.get();
@@ -90,5 +118,22 @@ public class TimerModel {
 
     public StringProperty nextExecutionTextProperty() {
         return nextExecutionText;
+    }
+
+    // --- executionCount ---
+    public int getExecutionCount() {
+        return executionCount.get();
+    }
+
+    public void setExecutionCount(int value) {
+        executionCount.set(value);
+    }
+
+    public void incrementExecutionCount() {
+        executionCount.set(executionCount.get() + 1);
+    }
+
+    public IntegerProperty executionCountProperty() {
+        return executionCount;
     }
 }

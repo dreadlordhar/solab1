@@ -41,7 +41,7 @@
                         <Insets top="8" right="32" bottom="32" left="32"/>
                     </padding>
                     <Label fx:id="emptyStateLabel"
-                           text="Apasa &quot;+ New Timer&quot; pentru a adauga un timer nou."
+                           text="Niciun timer creat inca. Apasa &quot;+ New Timer&quot; pentru a incepe."
                            styleClass="empty-state"/>
                     <FlowPane fx:id="timerContainer" hgap="20" vgap="20" styleClass="timer-container"/>
                 </VBox>
