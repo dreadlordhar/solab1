@@ -31,9 +31,4 @@ public class Interval_timer extends TimerTask {
         timer.schedule(this, secunde * 1000L);
     }
 
-    public void stop() {
-        if (timer != null) {
-            timer.cancel();
-        }
-    }
-}
+   
