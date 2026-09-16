@@ -80,7 +80,23 @@ public class DistractionManager {
     }
 
     private void showPopup() {
-        // TODO
+        String name = memeNames[random.nextInt(memeNames.length)];
+        BufferedImage img = loadImage("/resources/images/" + name + ".png");
+        if (img == null) return;
+
+        // popapinator 5000
+        JDialog popup = new JDialog();
+        popup.setUndecorated(true);  // no title bar
+        popup.setModal(false);       // user can still click circles behind it
+        popup.setAlwaysOnTop(true);  // stays on top of the game
+        popup.setSize(500, 500);
+
+        // position randomiser
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = random.nextInt(screen.width - 500);
+        int y = random.nextInt(screen.height - 500);
+        popup.setLocation(x, y);
+
     }
 
     private BufferedImage loadImage(String path) {
