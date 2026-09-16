@@ -9,6 +9,7 @@ public class TimerController {
         private final TimerPanel view;
 
         private final TimerService timerService;
+        private boolean periodicMode;
 
         public TimerController(
                         TimerModel model,
@@ -22,6 +23,9 @@ public class TimerController {
                 // Adăugăm acțiunile butoanelor
                 view.getStartButton()
                                 .addActionListener(this::startTimer);
+
+                view.getPeriodicStartButton()
+                                .addActionListener(e -> startPeriodicTimer());
 
                 view.getPauseButton()
                                 .addActionListener(this::pauseTimer);
@@ -41,6 +45,21 @@ public class TimerController {
                         startExactTimeTimer();
                         return;
                 }
+
+                periodicMode = false;
+                startCountdown();
+        }
+
+        private void startPeriodicTimer() {
+                if (view.isExactTimeVisible()) {
+                        return;
+                }
+
+                periodicMode = true;
+                startCountdown();
+        }
+
+        private void startCountdown() {
 
                 // Setăm timpul dacă timerul nu a fost pornit
                 if (model.getRemainingSeconds() <= 0) {
@@ -80,6 +99,9 @@ public class TimerController {
                 view.getStartButton()
                                 .setEnabled(false);
 
+                view.getPeriodicStartButton()
+                                .setEnabled(false);
+
                 view.getPauseButton()
                                 .setEnabled(true);
 
@@ -117,16 +139,17 @@ public class TimerController {
         private void finishExactTimer() {
                 view.setStatusText("O programare a fost declanșată.");
                 view.showMessage(
-                                "🚀 A sosit ora programată!\nNava spațială a decolat.",
+                                " A sosit ora programată!\nNava spațială a decolat.",
                                 "Mission Complete");
         }
 
         private void switchTimer() {
                 boolean showExactTime = !view.isExactTimeVisible();
-                timerService.cancelAll();
                 view.animateToTimer(showExactTime);
                 view.setPauseButtonVisible(!showExactTime);
+                view.setPeriodicStartButtonVisible(!showExactTime);
                 view.getStartButton().setEnabled(true);
+                view.getPeriodicStartButton().setEnabled(true);
                 view.getPauseButton().setEnabled(false);
                 view.setSpinnersEnabled(true);
                 view.setExactTimeSpinnersEnabled(true);
@@ -151,7 +174,17 @@ public class TimerController {
                 } else {
 
                         // Timpul a expirat
-                        finishTimer();
+                        if (periodicMode) {
+                                view.showMessage(
+                                                "Perioada indicată a expirat. Timerul pornește din nou.",
+                                                "Perioadă finalizată");
+                                model.setTime(
+                                                model.getTotalSeconds() / 60,
+                                                model.getTotalSeconds() % 60);
+                                updateDisplay();
+                        } else {
+                                finishTimer();
+                        }
                 }
         }
 
@@ -186,6 +219,9 @@ public class TimerController {
                 view.getStartButton()
                                 .setEnabled(true);
 
+                view.getPeriodicStartButton()
+                                .setEnabled(true);
+
                 view.getPauseButton()
                                 .setEnabled(false);
 
@@ -199,9 +235,11 @@ public class TimerController {
 
                 // Oprim sarcina curentă
                 timerService.cancelAll();
+                periodicMode = false;
 
                 // Resetăm modelul
                 model.reset();
+                view.resetTimerInputs();
                 view.resetExactTimeToCurrent();
 
                 view.setTimerText("00:00");
@@ -212,6 +250,9 @@ public class TimerController {
                                 "Ready for launch");
 
                 view.getStartButton()
+                                .setEnabled(true);
+
+                view.getPeriodicStartButton()
                                 .setEnabled(true);
 
                 view.getPauseButton()
@@ -231,6 +272,9 @@ public class TimerController {
                 view.getStartButton()
                                 .setEnabled(true);
 
+                view.getPeriodicStartButton()
+                                .setEnabled(true);
+
                 view.getPauseButton()
                                 .setEnabled(false);
 
@@ -243,7 +287,7 @@ public class TimerController {
 
                 // Afișăm mesajul final
                 view.showMessage(
-                                "🚀 Timpul a expirat!\n"
+                                "Timpul a expirat!\n"
                                                 + "Nava spațială a decolat.",
                                 "Mission Complete");
         }

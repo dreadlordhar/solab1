@@ -38,7 +38,9 @@ Folderul contine codul sursa al aplicatiei.
 ### Timer 1
 
 Countdown cu minute si secunde. Dupa pornire, `TimerTask` se executa la
-fiecare secunda si scade timpul ramas.
+fiecare secunda si scade timpul ramas. Butonul `START PERIODIC` reporneste
+automat countdown-ul cu aceeasi perioada dupa fiecare expirare; modul se
+opreste cu `PAUSE` sau `RESET`.
 
 ### Timer 2
 

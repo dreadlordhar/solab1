@@ -23,6 +23,7 @@ public class TimerPanel extends JFrame {
         private JProgressBar progressBar;
 
         private JButton startButton;
+        private JButton periodicStartButton;
         private JButton pauseButton;
         private JButton resetButton;
         private JButton switchTimerButton;
@@ -41,7 +42,7 @@ public class TimerPanel extends JFrame {
 
                 // Setările ferestrei
                 setTitle("Space Ship Timer");
-                setSize(550, 500);
+                setSize(800, 600);
 
                 setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 setLocationRelativeTo(null);
@@ -236,27 +237,29 @@ public class TimerPanel extends JFrame {
                 // BUTOANE
 
                 JPanel buttonPanel = new JPanel(
-                                new FlowLayout());
+                                new GridLayout(1, 5, 4, 0));
 
                 buttonPanel.setBackground(
                                 new Color(10, 15, 40));
 
                 startButton = new JButton("START");
+                periodicStartButton = new JButton("START Pr");
                 pauseButton = new JButton("PAUSE");
                 resetButton = new JButton("RESET");
                 switchTimerButton = new JButton("TIMER 2  >>");
 
                 // Aplicăm stilul butoanelor
                 styleButton(startButton);
+                styleButton(periodicStartButton);
                 styleButton(pauseButton);
                 styleButton(resetButton);
                 styleButton(switchTimerButton);
-                switchTimerButton.setPreferredSize(new Dimension(145, 40));
 
                 // PAUSE este dezactivat inițial
                 pauseButton.setEnabled(false);
 
                 buttonPanel.add(startButton);
+                buttonPanel.add(periodicStartButton);
                 buttonPanel.add(pauseButton);
                 buttonPanel.add(resetButton);
                 buttonPanel.add(switchTimerButton);
@@ -433,6 +436,14 @@ public class TimerPanel extends JFrame {
                 return startButton;
         }
 
+        public JButton getPeriodicStartButton() {
+                return periodicStartButton;
+        }
+
+        public void setPeriodicStartButtonVisible(boolean visible) {
+                periodicStartButton.setVisible(visible);
+        }
+
         public JButton getPauseButton() {
                 return pauseButton;
         }
@@ -451,6 +462,11 @@ public class TimerPanel extends JFrame {
 
         public JSpinner getSecondsSpinner() {
                 return secondsSpinner;
+        }
+
+        public void resetTimerInputs() {
+                minutesSpinner.setValue(5);
+                secondsSpinner.setValue(0);
         }
 
         public int getTargetHour() {
