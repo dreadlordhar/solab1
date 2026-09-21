@@ -27,6 +27,10 @@ public class DistractionManager {
     // File names for pop ups
     private final String[] memeNames = {
         "cat_laugh",
+        "pterodactil",
+        "nyan_cat",
+        "nokia",
+        "matrix",
     };
 
     public void start(long gameDuration) {
@@ -116,7 +120,7 @@ public class DistractionManager {
         SwingUtilities.invokeLater(() -> popup.setVisible(true));
 
         // play paired sound on appearance
-        playSound("/resources/sounds/" + name + ".wav");
+        Clip currentClip = playSound("/resources/sounds/" + name + ".wav");
 
         // auto-close after 3-5 seconds
         int duration = 3000 + random.nextInt(2001);
@@ -129,13 +133,11 @@ public class DistractionManager {
         }), duration);
         popupTimers.add(autoClose);
 
-        // click to close + low chance meme sound
+        // click to close
         popup.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (random.nextDouble() < 0.15) {
-                    playSound("/resources/sounds/" + name + ".wav");
-                }
+                if (currentClip != null) currentClip.stop();
                 popup.dispose();
                 openPopups.remove(popup);
             }
@@ -152,16 +154,17 @@ public class DistractionManager {
         }
     }
 
-    private void playSound(String path) {
+    private Clip playSound(String path) {
         try {
             InputStream is = getClass().getResourceAsStream(path);
-            if (is == null) return;
+            if (is == null) return null;
             AudioInputStream audio = AudioSystem.getAudioInputStream(is);
             Clip clip = AudioSystem.getClip();
             clip.open(audio);
             clip.start();
+            return clip;
         } catch (Exception e) {
-            // silently fail if sound missing
+            return null;
         }
     }
 }
