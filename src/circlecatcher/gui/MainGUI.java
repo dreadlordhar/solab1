@@ -122,7 +122,7 @@ public class MainGUI {
                 // --- START the game ---
                 gameRunning = true;
                 gameStartTime = System.currentTimeMillis();
-                gameDuration = 20000; // 20 seconds for testing
+                gameDuration = 120000; // 2 minutes for testing
                 startButton.setText("Stop");
 
                 // schedule countdown timer (ticks every 100ms)
