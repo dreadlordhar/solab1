@@ -89,8 +89,10 @@ public class MainGUI {
 
 
         // set frame site
-        frame.setMinimumSize(new Dimension(1600, 900));
+        frame.setMinimumSize(new Dimension(640, 480));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(true);
+        frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 
         // FROM HERE WE ADD ONLY COMPONENTS TO EXISTENT PANELS
         // set font size

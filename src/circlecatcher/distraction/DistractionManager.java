@@ -3,14 +3,13 @@ package circlecatcher.distraction;
 import javax.swing.*;
 
 import javax.sound.sampled.*;
-import javax.imageio.ImageIO;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 
 import java.io.InputStream;
-// did some specific imports to solve ambiguous bug
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,16 +33,14 @@ public class DistractionManager {
     };
 
     public void start(long gameDuration) {
-        if (random.nextDouble() < 0.10) return; // if activated, no pop ups
+        if (random.nextDouble() < 0.10) return;
 
-        int perMinute = 3 + random.nextInt(2); // 3 or 4 pop ups per minute
+        int perMinute = 3 + random.nextInt(2);
         int total = (int) ((gameDuration / 1000.0) / 60.0 * perMinute);
         if (total < 1) total = 1;
 
-        // generate triggers
         List<Long> triggers = generateTriggerTimes(gameDuration, total);
 
-        // timer scheduling
         for (long delay : triggers) {
             Timer t = new Timer();
             t.schedule(
@@ -55,9 +52,14 @@ public class DistractionManager {
     }
 
     public void stop() {
-        for (Timer t : popupTimers) t.cancel();
+        for (Timer t : popupTimers) {
+            t.cancel();
+        }
         popupTimers.clear();
-        for (JDialog p : openPopups) p.dispose();
+
+        for (JDialog p : openPopups) {
+            p.dispose();
+        }
         openPopups.clear();
     }
 
@@ -67,11 +69,17 @@ public class DistractionManager {
 
         for (int i = 0; i < count; i++) {
             int maxAttempts = 100;
+
             for (int attempt = 0; attempt < maxAttempts; attempt++) {
-                long candidate = (long) (random.nextDouble() * (gameDuration - 5000));
-                if (candidate < 1000) candidate = 1000;
+                long candidate =
+                    (long) (random.nextDouble() * (gameDuration - 5000));
+
+                if (candidate < 1000) {
+                    candidate = 1000;
+                }
 
                 boolean tooClose = false;
+
                 for (long existing : times) {
                     if (Math.abs(existing - candidate) < minGap) {
                         tooClose = true;
@@ -81,7 +89,7 @@ public class DistractionManager {
 
                 if (!tooClose) {
                     times.add(candidate);
-                    break; // move to next distraction
+                    break;
                 }
             }
         }
@@ -92,63 +100,120 @@ public class DistractionManager {
 
     private void showPopup() {
         if (memeNames.length == 0) return;
+
         String name = memeNames[random.nextInt(memeNames.length)];
-        BufferedImage img = loadImage("/resources/images/" + name + ".png");
-        if (img == null) return;
+
+        ImageIcon icon = loadImageIcon("/resources/images/" + name + ".gif");
+
+        if (icon == null) {
+            icon = loadImageIcon("/resources/images/" + name + ".png");
+        }
+
+        if (icon == null) return;
 
         // popapinator 5000
         JDialog popup = new JDialog();
-        popup.setUndecorated(true);  // no title bar
-        popup.setModal(false);       // user can still click circles behind it
-        popup.setAlwaysOnTop(true);  // stays on top of the game
-        popup.setSize(500, 500);
+        popup.setUndecorated(true);
+        popup.setModal(false);
+        popup.setAlwaysOnTop(true);
 
-        // position randomiser
+        int popupSize = 500;
+        int w = icon.getIconWidth();
+        int h = icon.getIconHeight();
+
+        if (
+            w > popupSize ||
+            h > popupSize
+        )
+            popup.setSize(popupSize, popupSize);
+        else
+            popup.setSize(w, h);
+
+
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = Math.max(0, random.nextInt(Math.max(1, screen.width - 500)));
-        int y = Math.max(0, random.nextInt(Math.max(1, screen.height - 500)));
+
+        int x = Math.max(
+            0,
+            random.nextInt(Math.max(1, screen.width - popupSize))
+        );
+
+        int y = Math.max(
+            0,
+            random.nextInt(Math.max(1, screen.height - popupSize))
+        );
+
         popup.setLocation(x, y);
 
-        // display the image
-        JLabel label = new JLabel(new ImageIcon(img));
+        JLabel label = new JLabel(icon);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
         popup.add(label);
 
-        // track it
         openPopups.add(popup);
 
-        // show it
         SwingUtilities.invokeLater(() -> popup.setVisible(true));
 
-        // play paired sound on appearance
-        Clip currentClip = playSound("/resources/sounds/" + name + ".wav");
+        Clip currentClip =
+            playSound("/resources/sounds/" + name + ".wav");
 
-        // auto-close after 3-5 seconds
         int duration = 3000 + random.nextInt(2001);
+
         Timer autoClose = new Timer();
-        autoClose.schedule(Task.set(() -> {
-            SwingUtilities.invokeLater(() -> {
-                popup.dispose();
-                openPopups.remove(popup);
-            });
-        }), duration);
+
+        autoClose.schedule(
+            Task.set(() -> {
+                SwingUtilities.invokeLater(() -> {
+                    if (currentClip != null) {
+                        currentClip.stop();
+                        currentClip.close();
+                    }
+
+                    popup.dispose();
+                    openPopups.remove(popup);
+                });
+            }),
+            duration
+        );
+
         popupTimers.add(autoClose);
 
-        // click to close
         popup.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (currentClip != null) currentClip.stop();
+                if (currentClip != null) {
+                    currentClip.stop();
+                    currentClip.close();
+                }
+
+                popup.dispose();
+                openPopups.remove(popup);
+            }
+        });
+
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (currentClip != null) {
+                    currentClip.stop();
+                    currentClip.close();
+                }
+
                 popup.dispose();
                 openPopups.remove(popup);
             }
         });
     }
 
-    private BufferedImage loadImage(String path) {
+    private ImageIcon loadImageIcon(String path) {
         try {
-            InputStream is = getClass().getResourceAsStream(path);
-            if (is == null) return null;
-            return ImageIO.read(is);
+            URL url = getClass().getResource(path);
+
+            if (url == null) {
+                return null;
+            }
+
+            return new ImageIcon(url);
         } catch (Exception e) {
             return null;
         }
@@ -157,11 +222,18 @@ public class DistractionManager {
     private Clip playSound(String path) {
         try {
             InputStream is = getClass().getResourceAsStream(path);
-            if (is == null) return null;
-            AudioInputStream audio = AudioSystem.getAudioInputStream(is);
+
+            if (is == null) {
+                return null;
+            }
+
+            AudioInputStream audio =
+                AudioSystem.getAudioInputStream(is);
+
             Clip clip = AudioSystem.getClip();
             clip.open(audio);
             clip.start();
+
             return clip;
         } catch (Exception e) {
             return null;
