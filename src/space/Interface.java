@@ -5,10 +5,6 @@ import java.awt.*;
 
 public class Interface extends JFrame {
 
-    // ==========================================
-    // COMPONENTE
-    // ==========================================
-
     private JProgressBar fuelBar;
 
     private JLabel fuelLabel;
@@ -25,33 +21,13 @@ public class Interface extends JFrame {
 
     private JButton stopButton;
 
-
-    // ==========================================
-    // TIMER-E
-    // ==========================================
-
     private FuelTimer fuelTimer;
 
     private Timer rocketAnimationTimer;
 
-
-    // ==========================================
-    // PANOU RACHETĂ
-    // ==========================================
-
     private RocketPanel rocketPanel;
 
-
-    // ==========================================
-    // POZIȚIA RACHETEI
-    // ==========================================
-
     private int rocketY = 160;
-
-
-    // ==========================================
-    // CONSTRUCTOR
-    // ==========================================
 
     public Interface() {
 
@@ -59,36 +35,26 @@ public class Interface extends JFrame {
                 "Space Mission"
         );
 
-
         setSize(
                 750,
                 800
         );
 
-
         setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE
         );
-
 
         setLocationRelativeTo(
                 null
         );
 
-
         createInterface();
     }
-
-
-    // ==========================================
-    // CREAREA INTERFEȚEI
-    // ==========================================
 
     private void createInterface() {
 
         JPanel mainPanel =
                 new JPanel();
-
 
         mainPanel.setLayout(
                 new BorderLayout(
@@ -96,7 +62,6 @@ public class Interface extends JFrame {
                         10
                 )
         );
-
 
         mainPanel.setBorder(
                 BorderFactory.createEmptyBorder(
@@ -108,16 +73,11 @@ public class Interface extends JFrame {
         );
 
 
-        // ==========================================
-        // TITLU
-        // ==========================================
-
         JLabel titleLabel =
                 new JLabel(
                         "SPACE MISSION",
                         SwingConstants.CENTER
                 );
-
 
         titleLabel.setFont(
                 new Font(
@@ -127,25 +87,17 @@ public class Interface extends JFrame {
                 )
         );
 
-
         mainPanel.add(
                 titleLabel,
                 BorderLayout.NORTH
         );
 
-
-        // ==========================================
-        // ZONA DE LANSARE
-        // ==========================================
-
         rocketPanel =
                 new RocketPanel();
-
 
         rocketPanel.setLayout(
                 null
         );
-
 
         rocketPanel.setBorder(
                 BorderFactory.createTitledBorder(
@@ -153,17 +105,11 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // COUNTDOWN
-        // ==========================================
-
         countdownLabel =
                 new JLabel(
                         "00:10.00",
                         SwingConstants.CENTER
                 );
-
 
         countdownLabel.setFont(
                 new Font(
@@ -173,16 +119,13 @@ public class Interface extends JFrame {
                 )
         );
 
-
         countdownLabel.setOpaque(
                 true
         );
 
-
         countdownLabel.setBackground(
                 Color.WHITE
         );
-
 
         countdownLabel.setBorder(
                 BorderFactory.createLineBorder(
@@ -191,7 +134,6 @@ public class Interface extends JFrame {
                 )
         );
 
-
         countdownLabel.setBounds(
                 255,
                 20,
@@ -199,25 +141,17 @@ public class Interface extends JFrame {
                 60
         );
 
-
         rocketPanel.add(
                 countdownLabel
         );
-
 
         mainPanel.add(
                 rocketPanel,
                 BorderLayout.CENTER
         );
 
-
-        // ==========================================
-        // PANOU INFORMAȚII
-        // ==========================================
-
         JPanel infoPanel =
                 new JPanel();
-
 
         infoPanel.setLayout(
                 new BoxLayout(
@@ -226,16 +160,10 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // FUEL
-        // ==========================================
-
         JLabel fuelTitle =
                 new JLabel(
                         "FUEL"
                 );
-
 
         fuelTitle.setFont(
                 new Font(
@@ -245,11 +173,9 @@ public class Interface extends JFrame {
                 )
         );
 
-
         fuelTitle.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
-
 
         infoPanel.add(
                 fuelTitle
@@ -262,16 +188,13 @@ public class Interface extends JFrame {
                         100
                 );
 
-
         fuelBar.setValue(
                 100
         );
 
-
         fuelBar.setStringPainted(
                 true
         );
-
 
         fuelBar.setMaximumSize(
                 new Dimension(
@@ -280,11 +203,9 @@ public class Interface extends JFrame {
                 )
         );
 
-
         fuelBar.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
-
 
         infoPanel.add(
                 fuelBar
@@ -296,7 +217,6 @@ public class Interface extends JFrame {
                         "..."
                 );
 
-
         fuelLabel.setFont(
                 new Font(
                         "Arial",
@@ -305,16 +225,13 @@ public class Interface extends JFrame {
                 )
         );
 
-
         fuelLabel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
-
         infoPanel.add(
                 fuelLabel
         );
-
 
         infoPanel.add(
                 Box.createVerticalStrut(
@@ -322,16 +239,10 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // OXIGEN
-        // ==========================================
-
         oxygenLabel =
                 new JLabel(
                         "OXYGEN: 30 seconds"
                 );
-
 
         oxygenLabel.setFont(
                 new Font(
@@ -341,16 +252,13 @@ public class Interface extends JFrame {
                 )
         );
 
-
         oxygenLabel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
-
         infoPanel.add(
                 oxygenLabel
         );
-
 
         infoPanel.add(
                 Box.createVerticalStrut(
@@ -358,17 +266,11 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // STATUS
-        // ==========================================
-
         statusLabel =
                 new JLabel(
                         "READY FOR LAUNCH",
                         SwingConstants.CENTER
                 );
-
 
         statusLabel.setFont(
                 new Font(
@@ -378,16 +280,13 @@ public class Interface extends JFrame {
                 )
         );
 
-
         statusLabel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
-
         infoPanel.add(
                 statusLabel
         );
-
 
         infoPanel.add(
                 Box.createVerticalStrut(
@@ -395,17 +294,11 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // EVENIMENT
-        // ==========================================
-
         eventLabel =
                 new JLabel(
                         "Waiting for space event...",
                         SwingConstants.CENTER
                 );
-
 
         eventLabel.setFont(
                 new Font(
@@ -415,16 +308,13 @@ public class Interface extends JFrame {
                 )
         );
 
-
         eventLabel.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
-
         infoPanel.add(
                 eventLabel
         );
-
 
         infoPanel.add(
                 Box.createVerticalStrut(
@@ -432,143 +322,97 @@ public class Interface extends JFrame {
                 )
         );
 
-
-        // ==========================================
-        // BUTOANE
-        // ==========================================
-
         JPanel buttonPanel =
                 new JPanel();
-
 
         startButton =
                 new JButton(
                         "START MISSION"
                 );
 
-
         stopButton =
                 new JButton(
                         "STOP"
                 );
 
-
         buttonPanel.add(
                 startButton
         );
-
 
         buttonPanel.add(
                 stopButton
         );
 
-
         infoPanel.add(
                 buttonPanel
         );
-
 
         mainPanel.add(
                 infoPanel,
                 BorderLayout.SOUTH
         );
 
-
         setContentPane(
                 mainPanel
         );
 
-
-        // ==========================================
-        // BUTON START
-        // ==========================================
-
         startButton.addActionListener(
                 e -> startMission()
         );
-
-
-        // ==========================================
-        // BUTON STOP
-        // ==========================================
 
         stopButton.addActionListener(
                 e -> stopMission()
         );
     }
 
-
-    // ==========================================
-    // START MISSION
-    // ==========================================
-
     private void startMission() {
 
-        // Oprim animația veche
 
         if (rocketAnimationTimer != null) {
 
             rocketAnimationTimer.stop();
         }
 
-
-        // Resetăm racheta
-
         rocketY = 160;
-
 
         rocketPanel.setRocketY(
                 rocketY
         );
 
-
-        // Resetăm informațiile
+        rocketPanel.setLaunchStructureVisible(
+                true
+        );
 
         countdownLabel.setText(
                 "00:10.00"
         );
 
-
         fuelBar.setValue(
                 100
         );
-
 
         fuelLabel.setText(
                 "100%"
         );
 
-
         oxygenLabel.setText(
                 "OXYGEN: 30 seconds"
         );
-
 
         statusLabel.setText(
                 "COUNTDOWN STARTED..."
         );
 
-
         eventLabel.setText(
                 "Preparing rocket for launch..."
         );
-
 
         startButton.setEnabled(
                 false
         );
 
-
-        // ==========================================
-        // CREARE FUEL TIMER
-        // ==========================================
-
         fuelTimer =
                 new FuelTimer(
-
-                        // ------------------------------
-                        // COUNTDOWN
-                        // ------------------------------
 
                         remaining ->
                                 SwingUtilities.invokeLater(
@@ -582,11 +426,6 @@ public class Interface extends JFrame {
                                         }
                                 ),
 
-
-                        // ------------------------------
-                        // FUEL
-                        // ------------------------------
-
                         fuel ->
                                 SwingUtilities.invokeLater(
                                         () -> {
@@ -595,17 +434,11 @@ public class Interface extends JFrame {
                                                     fuel
                                             );
 
-
                                             fuelLabel.setText(
                                                     fuel + "%"
                                             );
                                         }
                                 ),
-
-
-                        // ------------------------------
-                        // OXIGEN
-                        // ------------------------------
 
                         oxygen ->
                                 SwingUtilities.invokeLater(
@@ -619,11 +452,6 @@ public class Interface extends JFrame {
                                         }
                                 ),
 
-
-                        // ==================================
-                        // LANSARE
-                        // ==================================
-
                         () ->
                                 SwingUtilities.invokeLater(
                                         () -> {
@@ -632,25 +460,21 @@ public class Interface extends JFrame {
                                                     "00:00.00"
                                             );
 
-
                                             statusLabel.setText(
                                                     "ROCKET LAUNCHED!"
                                             );
-
 
                                             eventLabel.setText(
                                                     "Rocket is taking off!"
                                             );
 
+                                            rocketPanel.setLaunchStructureVisible(
+                                                    false
+                                            );
 
                                             startRocketAnimation();
                                         }
                                 ),
-
-
-                        // ==================================
-                        // SATELIT
-                        // ==================================
 
                         () ->
                                 SwingUtilities.invokeLater(
@@ -660,17 +484,11 @@ public class Interface extends JFrame {
                                                     "Satellite separation!"
                                             );
 
-
                                             statusLabel.setText(
                                                     "SATELLITE SEPARATED"
                                             );
                                         }
                                 ),
-
-
-                        // ==================================
-                        // OXIGEN TERMINAT
-                        // ==================================
 
                         () ->
                                 SwingUtilities.invokeLater(
@@ -680,7 +498,6 @@ public class Interface extends JFrame {
                                                     "OXYGEN DEPLETED!"
                                             );
 
-
                                             eventLabel.setText(
                                                     "MISSION FAILED"
                                             );
@@ -689,15 +506,8 @@ public class Interface extends JFrame {
                 );
 
 
-        // Pornim timerul
-
         fuelTimer.start();
     }
-
-
-    // ==========================================
-    // FORMAT COUNTDOWN
-    // ==========================================
 
     private String formatTime(
             long milliseconds
@@ -708,14 +518,11 @@ public class Interface extends JFrame {
             milliseconds = 0;
         }
 
-
         long seconds =
                 milliseconds / 1000;
 
-
         long millis =
                 milliseconds % 1000;
-
 
         return String.format(
                 "00:%02d.%02d",
@@ -724,18 +531,12 @@ public class Interface extends JFrame {
         );
     }
 
-
-    // ==========================================
-    // ANIMAȚIA RACHETEI
-    // ==========================================
-
     private void startRocketAnimation() {
 
         if (rocketAnimationTimer != null) {
 
             rocketAnimationTimer.stop();
         }
-
 
         rocketY = 160;
 
@@ -745,8 +546,6 @@ public class Interface extends JFrame {
                         30,
                         e -> {
 
-                            // Racheta urcă
-
                             rocketY -= 5;
 
 
@@ -754,20 +553,14 @@ public class Interface extends JFrame {
                                     rocketY
                             );
 
-
-                            // Când iese din ecran
-
-                            if (rocketY < -130) {
-
-                                rocketAnimationTimer.stop();
-
-
-                                rocketY = 160;
-
+                            if (rocketY <= 80) {
+                                rocketY = 80;
 
                                 rocketPanel.setRocketY(
                                         rocketY
                                 );
+
+                                rocketAnimationTimer.stop();
                             }
                         }
                 );
@@ -776,11 +569,6 @@ public class Interface extends JFrame {
         rocketAnimationTimer.start();
     }
 
-
-    // ==========================================
-    // STOP MISSION
-    // ==========================================
-
     private void stopMission() {
 
         if (fuelTimer != null) {
@@ -788,70 +576,56 @@ public class Interface extends JFrame {
             fuelTimer.stop();
         }
 
-
         if (rocketAnimationTimer != null) {
 
             rocketAnimationTimer.stop();
         }
 
-
-        // Resetăm racheta
-
         rocketY = 160;
-
 
         rocketPanel.setRocketY(
                 rocketY
         );
 
-
-        // Resetăm interfața
+        rocketPanel.setLaunchStructureVisible(
+                true
+        );
 
         countdownLabel.setText(
                 "00:10.00"
         );
 
-
         fuelBar.setValue(
                 100
         );
-
 
         fuelLabel.setText(
                 "100%"
         );
 
-
         oxygenLabel.setText(
                 "OXYGEN: 30 seconds"
         );
-
 
         statusLabel.setText(
                 "MISSION STOPPED"
         );
 
-
         eventLabel.setText(
                 "Mission stopped."
         );
-
 
         startButton.setEnabled(
                 true
         );
     }
 
-
-    // =====================================================
-    // PANOU PENTRU SCENA SPAȚIALĂ
-    // =====================================================
-
     private static class RocketPanel
             extends JPanel {
 
-
         private int rocketY = 160;
+
+        private boolean launchStructureVisible = true;
 
 
         public RocketPanel() {
@@ -865,11 +639,6 @@ public class Interface extends JFrame {
             );
         }
 
-
-        // ==========================================
-        // POZIȚIA RACHETEI
-        // ==========================================
-
         public void setRocketY(
                 int y
         ) {
@@ -879,10 +648,14 @@ public class Interface extends JFrame {
             repaint();
         }
 
+        public void setLaunchStructureVisible(
+                boolean visible
+        ) {
 
-        // ==========================================
-        // DESENAREA SCENEI
-        // ==========================================
+            launchStructureVisible = visible;
+
+            repaint();
+        }
 
         @Override
         protected void paintComponent(
@@ -896,17 +669,10 @@ public class Interface extends JFrame {
                     (Graphics2D) g.create();
 
 
-            // Antialiasing
-
             g2.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
-
-
-            // ==========================================
-            // FUNDAL
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -916,18 +682,12 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillRect(
                     0,
                     0,
                     getWidth(),
                     getHeight()
             );
-
-
-            // ==========================================
-            // STELE
-            // ==========================================
 
             drawStar(
                     g2,
@@ -936,14 +696,12 @@ public class Interface extends JFrame {
                     4
             );
 
-
             drawStar(
                     g2,
                     130,
                     120,
                     3
             );
-
 
             drawStar(
                     g2,
@@ -952,14 +710,12 @@ public class Interface extends JFrame {
                     4
             );
 
-
             drawStar(
                     g2,
                     520,
                     70,
                     4
             );
-
 
             drawStar(
                     g2,
@@ -968,14 +724,12 @@ public class Interface extends JFrame {
                     3
             );
 
-
             drawStar(
                     g2,
                     660,
                     55,
                     4
             );
-
 
             drawStar(
                     g2,
@@ -984,14 +738,12 @@ public class Interface extends JFrame {
                     3
             );
 
-
             drawStar(
                     g2,
                     570,
                     200,
                     3
             );
-
 
             drawStar(
                     g2,
@@ -1000,18 +752,12 @@ public class Interface extends JFrame {
                     2
             );
 
-
             drawStar(
                     g2,
                     470,
                     150,
                     2
             );
-
-
-            // ==========================================
-            // LUNA
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -1021,16 +767,12 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillOval(
                     540,
                     35,
                     70,
                     70
             );
-
-
-            // Cratere
 
             g2.setColor(
                     new Color(
@@ -1040,14 +782,12 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillOval(
                     555,
                     50,
                     12,
                     8
             );
-
 
             g2.fillOval(
                     580,
@@ -1056,18 +796,12 @@ public class Interface extends JFrame {
                     12
             );
 
-
             g2.fillOval(
                     570,
                     75,
                     15,
                     9
             );
-
-
-            // ==========================================
-            // PLANETĂ
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -1077,16 +811,12 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillOval(
                     25,
                     160,
                     70,
                     70
             );
-
-
-            // Atmosferă
 
             g2.setColor(
                     new Color(
@@ -1097,7 +827,6 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.drawOval(
                     20,
                     155,
@@ -1105,163 +834,123 @@ public class Interface extends JFrame {
                     80
             );
 
+            if (launchStructureVisible) {
 
-            // ==========================================
-            // PLATFORMĂ
-            // ==========================================
+                int groundY =
+                        getHeight() - 55;
 
-            int groundY =
-                    getHeight() - 55;
-
-
-            g2.setColor(
-                    new Color(
-                            80,
-                            85,
-                            95
-                    )
-            );
-
-
-            g2.fillRect(
-                    120,
-                    groundY,
-                    480,
-                    12
-            );
-
-
-            // Detalii platformă
-
-            g2.setColor(
-                    new Color(
-                            170,
-                            170,
-                            175
-                    )
-            );
-
-
-            for (
-                    int i = 0;
-                    i < 8;
-                    i++
-            ) {
+                g2.setColor(
+                        new Color(
+                                80,
+                                85,
+                                95
+                        )
+                );
 
                 g2.fillRect(
-                        135 + i * 55,
-                        groundY + 2,
-                        25,
-                        5
+                        120,
+                        groundY,
+                        480,
+                        12
                 );
-            }
 
+                g2.setColor(
+                        new Color(
+                                170,
+                                170,
+                                175
+                        )
+                );
 
-            // ==========================================
-            // TURN DE LANSARE
-            // ==========================================
+                for (
+                        int i = 0;
+                        i < 8;
+                        i++
+                ) {
 
-            int towerX =
-                    getWidth() / 2;
+                    g2.fillRect(
+                            135 + i * 55,
+                            groundY + 2,
+                            25,
+                            5
+                    );
+                }
 
+                int towerX =
+                        getWidth() / 2;
 
-            g2.setColor(
-                    new Color(
-                            120,
-                            125,
-                            135
-                    )
-            );
-
-
-            // Stâlp stânga
-
-            g2.fillRect(
-                    towerX - 80,
-                    groundY - 190,
-                    8,
-                    190
-            );
-
-
-            // Stâlp dreapta
-
-            g2.fillRect(
-                    towerX + 72,
-                    groundY - 190,
-                    8,
-                    190
-            );
-
-
-            // Bare orizontale
-
-            for (
-                    int y = groundY - 170;
-                    y < groundY;
-                    y += 30
-            ) {
+                g2.setColor(
+                        new Color(
+                                120,
+                                125,
+                                135
+                        )
+                );
 
                 g2.fillRect(
                         towerX - 80,
-                        y,
-                        160,
-                        4
+                        groundY - 190,
+                        8,
+                        190
                 );
-            }
 
-
-            // Bare diagonale
-
-            g2.setStroke(
-                    new BasicStroke(
-                            2
-                    )
-            );
-
-
-            for (
-                    int y = groundY - 160;
-                    y < groundY - 20;
-                    y += 30
-            ) {
-
-                g2.drawLine(
-                        towerX - 75,
-                        y,
+                g2.fillRect(
                         towerX + 72,
-                        y + 30
+                        groundY - 190,
+                        8,
+                        190
                 );
 
+                for (
+                        int y = groundY - 170;
+                        y < groundY;
+                        y += 30
+                ) {
 
-                g2.drawLine(
-                        towerX + 72,
-                        y,
-                        towerX - 75,
-                        y + 30
+                    g2.fillRect(
+                            towerX - 80,
+                            y,
+                            160,
+                            4
+                    );
+                }
+
+                g2.setStroke(
+                        new BasicStroke(
+                                2
+                        )
                 );
+
+                for (
+                        int y = groundY - 160;
+                        y < groundY - 20;
+                        y += 30
+                ) {
+
+                    g2.drawLine(
+                            towerX - 75,
+                            y,
+                            towerX + 72,
+                            y + 30
+                    );
+
+                    g2.drawLine(
+                            towerX + 72,
+                            y,
+                            towerX - 75,
+                            y + 30
+                    );
+                }
             }
-
-
-            // ==========================================
-            // RACHETA
-            // ==========================================
 
             int centerX =
                     getWidth() / 2;
 
-
             int x =
                     centerX - 27;
 
-
             int y =
                     rocketY;
-
-
-            // ==========================================
-            // FUM
-            // ==========================================
 
             if (rocketY < 150) {
 
@@ -1272,11 +961,6 @@ public class Interface extends JFrame {
                 );
             }
 
-
-            // ==========================================
-            // CORP
-            // ==========================================
-
             g2.setColor(
                     new Color(
                             220,
@@ -1284,7 +968,6 @@ public class Interface extends JFrame {
                             230
                     )
             );
-
 
             g2.fillRoundRect(
                     x,
@@ -1295,32 +978,23 @@ public class Interface extends JFrame {
                     27
             );
 
-
-            // ==========================================
-            // VÂRF
-            // ==========================================
-
             Polygon nose =
                     new Polygon();
-
 
             nose.addPoint(
                     centerX,
                     y
             );
 
-
             nose.addPoint(
                     x,
                     y + 35
             );
 
-
             nose.addPoint(
                     x + 54,
                     y + 35
             );
-
 
             g2.setColor(
                     new Color(
@@ -1330,15 +1004,9 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillPolygon(
                     nose
             );
-
-
-            // ==========================================
-            // BANDĂ ROȘIE
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -1348,18 +1016,12 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillRect(
                     x,
                     y + 65,
                     54,
                     10
             );
-
-
-            // ==========================================
-            // FEREASTRĂ
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -1369,7 +1031,6 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillOval(
                     centerX - 11,
                     y + 42,
@@ -1377,11 +1038,9 @@ public class Interface extends JFrame {
                     22
             );
 
-
             g2.setColor(
                     Color.WHITE
             );
-
 
             g2.drawOval(
                     centerX - 11,
@@ -1390,32 +1049,23 @@ public class Interface extends JFrame {
                     22
             );
 
-
-            // ==========================================
-            // ARIPA STÂNGĂ
-            // ==========================================
-
             Polygon leftWing =
                     new Polygon();
-
 
             leftWing.addPoint(
                     x,
                     y + 75
             );
 
-
             leftWing.addPoint(
                     x - 22,
                     y + 112
             );
 
-
             leftWing.addPoint(
                     x,
                     y + 105
             );
-
 
             g2.setColor(
                     new Color(
@@ -1425,46 +1075,31 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillPolygon(
                     leftWing
             );
 
-
-            // ==========================================
-            // ARIPA DREAPTĂ
-            // ==========================================
-
             Polygon rightWing =
                     new Polygon();
-
 
             rightWing.addPoint(
                     x + 54,
                     y + 75
             );
 
-
             rightWing.addPoint(
                     x + 76,
                     y + 112
             );
-
 
             rightWing.addPoint(
                     x + 54,
                     y + 105
             );
 
-
             g2.fillPolygon(
                     rightWing
             );
-
-
-            // ==========================================
-            // MOTOR
-            // ==========================================
 
             g2.setColor(
                     new Color(
@@ -1474,7 +1109,6 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillRect(
                     centerX - 15,
                     y + 100,
@@ -1482,38 +1116,28 @@ public class Interface extends JFrame {
                     12
             );
 
-
-            // ==========================================
-            // FLACĂRĂ
-            // ==========================================
-
             int flameHeight =
                     25 +
-                    (int)
-                    (Math.random() * 25);
-
+                            (int)
+                                    (Math.random() * 25);
 
             Polygon flame =
                     new Polygon();
-
 
             flame.addPoint(
                     centerX - 14,
                     y + 110
             );
 
-
             flame.addPoint(
                     centerX,
                     y + 110 + flameHeight
             );
 
-
             flame.addPoint(
                     centerX + 14,
                     y + 110
             );
-
 
             g2.setColor(
                     new Color(
@@ -1522,7 +1146,6 @@ public class Interface extends JFrame {
                             0
                     )
             );
-
 
             g2.fillPolygon(
                     flame
@@ -1534,42 +1157,31 @@ public class Interface extends JFrame {
             Polygon innerFlame =
                     new Polygon();
 
-
             innerFlame.addPoint(
                     centerX - 7,
                     y + 110
             );
-
 
             innerFlame.addPoint(
                     centerX,
                     y + 110 + flameHeight - 10
             );
 
-
             innerFlame.addPoint(
                     centerX + 7,
                     y + 110
             );
 
-
             g2.setColor(
                     Color.YELLOW
             );
-
 
             g2.fillPolygon(
                     innerFlame
             );
 
-
             g2.dispose();
         }
-
-
-        // ==========================================
-        // DESENARE STEA
-        // ==========================================
 
         private void drawStar(
                 Graphics2D g2,
@@ -1582,7 +1194,6 @@ public class Interface extends JFrame {
                     Color.WHITE
             );
 
-
             g2.fillOval(
                     x,
                     y,
@@ -1590,11 +1201,6 @@ public class Interface extends JFrame {
                     size
             );
         }
-
-
-        // ==========================================
-        // DESENARE FUM
-        // ==========================================
 
         private void drawSmoke(
                 Graphics2D g2,
@@ -1611,7 +1217,6 @@ public class Interface extends JFrame {
                     )
             );
 
-
             g2.fillOval(
                     x - 35,
                     y,
@@ -1619,14 +1224,12 @@ public class Interface extends JFrame {
                     35
             );
 
-
             g2.fillOval(
                     x + 5,
                     y + 10,
                     40,
                     40
             );
-
 
             g2.fillOval(
                     x - 10,

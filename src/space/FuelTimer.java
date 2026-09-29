@@ -6,20 +6,11 @@ import java.util.function.Consumer;
 
 public class FuelTimer {
 
-    // ==========================================
-    // VALORI
-    // ==========================================
-
     private int fuel = 100;
 
     private int oxygen = 30;
 
     private final long launchDuration = 10000;
-
-
-    // ==========================================
-    // TIMER-E
-    // ==========================================
 
     private Timer launchTimer;
 
@@ -28,11 +19,6 @@ public class FuelTimer {
     private Timer oxygenTimer;
 
     private Timer eventTimer;
-
-
-    // ==========================================
-    // LISTENERE
-    // ==========================================
 
     private Consumer<Long> countdownListener;
 
@@ -46,10 +32,6 @@ public class FuelTimer {
 
     private Runnable oxygenEmptyListener;
 
-
-    // ==========================================
-    // CONSTRUCTOR
-    // ==========================================
 
     public FuelTimer(
             Consumer<Long> countdownListener,
@@ -73,20 +55,12 @@ public class FuelTimer {
         this.oxygenEmptyListener = oxygenEmptyListener;
     }
 
-
-    // ==========================================
-    // START
-    // ==========================================
-
     public void start() {
 
         startLaunchCountdown();
     }
 
-
-    // ==========================================
     // COUNTDOWN LANSARE
-    // ==========================================
 
     private void startLaunchCountdown() {
 
@@ -169,10 +143,7 @@ public class FuelTimer {
         );
     }
 
-
-    // ==========================================
     // TIMER COMBUSTIBIL
-    // ==========================================
 
     private void startFuelTimer() {
 
@@ -223,10 +194,7 @@ public class FuelTimer {
         );
     }
 
-
-    // ==========================================
     // TIMER OXIGEN
-    // ==========================================
 
     private void startOxygenTimer() {
 
@@ -284,10 +252,7 @@ public class FuelTimer {
         );
     }
 
-
-    // ==========================================
     // TIMER SATELIT
-    // ==========================================
 
     private void startSatelliteTimer() {
 
@@ -323,11 +288,6 @@ public class FuelTimer {
                 10000
         );
     }
-
-
-    // ==========================================
-    // STOP
-    // ==========================================
 
     public void stop() {
 
