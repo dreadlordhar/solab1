@@ -293,7 +293,7 @@ public class Interface extends JFrame {
 
         fuelLabel =
                 new JLabel(
-                        "100%"
+                        "..."
                 );
 
 
