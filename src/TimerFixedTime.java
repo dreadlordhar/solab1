@@ -14,11 +14,12 @@ import javax.swing.SwingUtilities;
 
 public class TimerFixedTime extends JPanel {
     private final JSpinner moment = new JSpinner(new SpinnerDateModel(
-        new Date(System.currentTimeMillis() + 60000), null, null, Calendar.SECOND));
+            new Date(System.currentTimeMillis() + 60000), null, null, Calendar.SECOND));
     private final JLabel stare = new JLabel("Oprit");
     private final JButton start = new JButton("Start");
     private final JButton stop = new JButton("Stop");
     private Timer timer;
+    private boolean indeplinit;
 
     public TimerFixedTime() {
         setLayout(new FlowLayout(FlowLayout.LEFT, 12, 20));
@@ -49,6 +50,8 @@ public class TimerFixedTime extends JPanel {
             return;
         }
         opreste();
+        indeplinit = false;
+        firePropertyChange("pornire", false, true); // TimerConditionat reia asteptarea
         Timer pornit = new Timer("timer-moment-fix", true);
         timer = pornit;
         start.setEnabled(false);
@@ -61,8 +64,10 @@ public class TimerFixedTime extends JPanel {
                 Date executat = new Date();
                 pornit.cancel();
                 SwingUtilities.invokeLater(() -> {
-                    if (timer != pornit) return;
+                    if (timer != pornit)
+                        return;
                     opreste();
+                    indeplinit = true;
                     stare.setText("Executat la " + ora(executat));
                 });
             }
@@ -71,6 +76,11 @@ public class TimerFixedTime extends JPanel {
 
     private String ora(Date data) {
         return new SimpleDateFormat("HH:mm:ss").format(data);
+    }
+
+    // Citita pe firul interfetei, la fel ca actualizarile de stare.
+    public boolean isSarcinaIndeplinita() {
+        return indeplinit;
     }
 
     public void opreste() {

@@ -54,7 +54,8 @@ public class TimerInterval extends JPanel {
                 pornit.cancel();
                 SwingUtilities.invokeLater(() -> {
                     // Ignoram rezultatul daca intre timp timerul a fost oprit.
-                    if (timer != pornit) return;
+                    if (timer != pornit)
+                        return;
                     opreste();
                     stare.setText("Executat dupa " + durata + " secunde.");
                 });

@@ -51,11 +51,12 @@ public class TimerPeriodic extends JPanel {
             @Override
             public void run() {
                 SwingUtilities.invokeLater(() -> {
-                    if (timer != pornit) return;
+                    if (timer != pornit)
+                        return;
                     executii++;
                     indeplinit = executii >= 5;
                     stare.setText("Executii: " + executii
-                        + (indeplinit ? " - conditie indeplinita" : " / 5"));
+                            + (indeplinit ? " - conditie indeplinita" : " / 5"));
                 });
             }
         }, milisecunde, milisecunde);

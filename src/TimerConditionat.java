@@ -7,18 +7,18 @@ import java.util.TimerTask;
 import javax.swing.*;
 
 public class TimerConditionat extends JPanel {
-    private final TimerPeriodic periodic;
+    private final TimerFixedTime momentFix;
     private final JLabel stare = new JLabel();
     private final Indicator indicator = new Indicator();
     private Timer timer;
 
-    public TimerConditionat(TimerPeriodic periodic) {
-        this.periodic = periodic;
+    public TimerConditionat(TimerFixedTime momentFix) {
+        this.momentFix = momentFix;
         setLayout(new FlowLayout(FlowLayout.LEFT, 12, 20));
         setBorder(BorderFactory.createTitledBorder("4. Timer conditionat"));
         add(indicator);
         add(stare);
-        periodic.addPropertyChangeListener("pornire", e -> asteapta());
+        momentFix.addPropertyChangeListener("pornire", e -> asteapta());
         asteapta();
     }
 
@@ -26,18 +26,19 @@ public class TimerConditionat extends JPanel {
         opreste();
         indicator.activ = false;
         indicator.repaint();
-        stare.setText("Astept 5 executii ale timerului periodic...");
+        stare.setText("Astept executia timerului la moment fix...");
         Timer pornit = new Timer("timer-conditionat", true);
         timer = pornit;
         pornit.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 SwingUtilities.invokeLater(() -> {
-                    if (timer != pornit || !periodic.isSarcinaIndeplinita()) return;
+                    if (timer != pornit || !momentFix.isSarcinaIndeplinita())
+                        return;
                     opreste();
                     indicator.activ = true;
                     indicator.repaint();
-                    stare.setText("Declansat automat: pragul de 5 executii a fost atins.");
+                    stare.setText("Declansat automat: timerul la moment fix a fost executat.");
                 });
             }
         }, 0, 300);

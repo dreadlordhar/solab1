@@ -12,7 +12,7 @@ public class MainFrame extends JFrame {
         TimerInterval interval = new TimerInterval();
         TimerFixedTime momentFix = new TimerFixedTime();
         TimerPeriodic periodic = new TimerPeriodic();
-        TimerConditionat conditionat = new TimerConditionat(periodic);
+        TimerConditionat conditionat = new TimerConditionat(momentFix);
         JPanel continut = new JPanel(new GridLayout(4, 1, 10, 10));
         continut.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         continut.add(interval);
