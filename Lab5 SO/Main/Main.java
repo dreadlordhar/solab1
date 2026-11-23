@@ -2,14 +2,23 @@
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Random;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -18,6 +27,10 @@ import java.util.stream.Stream;
 public class Main {
 
     static int interval = 10;
+
+    // numarul minim de fisiere criptate pentru comenzile de test (3, 4, 7, 8)
+    static final int MIN_TEST = 5;
+    static final int MAX_TEST = 50;
 
     // aceeasi consola ca in sarcina 19
     static final Scanner scanner = IntegritateSistem.scanner;
@@ -100,6 +113,7 @@ public class Main {
         System.out.println("14. Windows: sfc /verifyonly                               (19)");
         System.out.println("15. Windows: sfc /scannow (cu confirmare)                  (19)");
         System.out.println("16. Stare dependente: criptat (23) -> pazit si salvat (19) (19+23)");
+        System.out.println("17. Creeaza fisiere de test in folderul urmarit (alegi numarul) (23)");
         System.out.println("0. Iesire");
         System.out.print("Alegere: ");
     }
@@ -133,6 +147,7 @@ public class Main {
                     IntegritateSistem.ruleazaSfc("/scannow");
                 break;
             case "16": stareDependente(); break;
+            case "17": creeazaFisiereTest(false); break;
             default: System.out.println("Optiune necunoscuta.");
         }
     }
@@ -178,6 +193,7 @@ public class Main {
 
     // 3: intai verificarea cu restaurare (19), apoi decriptarea (23)
     static void decripteazaTot() throws Exception {
+        if (!asigura()) return;
         int deteriorate = IntegritateSistem.verifica(true, true);
         if (deteriorate > 0) {
             IntegritateSistem.jurnal("INFO", deteriorate + " fisier(e) restaurate inainte de decriptare.");
@@ -200,6 +216,7 @@ public class Main {
 
     // 4: sterge un fisier criptat si schimba un octet in altul; sarcina 19 le restaureaza
     static void simuleazaAtac() throws Exception {
+        if (!asigura()) return;
         synchronized (IntegritateSistem.BLOCARE) {
             List<Path> lista = fisiereEnc();
             if (lista.isEmpty()) {
@@ -292,6 +309,143 @@ public class Main {
         }
     }
 
+
+    // ---------- fisiere de test (sarcina 23) ----------
+
+    // comenzile 3, 4, 7, 8 au nevoie de fisiere criptate: daca sunt prea putine, se ofera crearea lor
+    // intoarce true daca exista cel putin un fisier criptat cu care se poate continua
+    static boolean asigura() throws Exception {
+        int existente = fisiereEnc().size();
+        if (existente >= MIN_TEST) return true;
+        System.out.println(existente == 0
+                ? "Nu exista fisiere criptate."
+                : "Exista doar " + existente + " fisier(e) criptat(e); pentru test sunt necesare cel putin " + MIN_TEST + ".");
+        System.out.print("Creez fisiere de test care se cripteaza singure? (d/n): ");
+        String r = citeste();
+        if (r != null && (r.equalsIgnoreCase("d") || r.equalsIgnoreCase("da"))) {
+            creeazaFisiereTest(true);
+        } else {
+            System.out.println("Puteti copia propriile fisiere in " + urmarit() + " (se cripteaza singure) sau folositi optiunea 17.");
+        }
+        return !fisiereEnc().isEmpty();
+    }
+
+    // 17: creeaza n fisiere de test (text, csv, json, log, imagini png) in folderul urmarit
+    // si asteapta sa fie criptate de sarcina 23
+    static void creeazaFisiereTest(boolean dinComanda) throws Exception {
+        if (urmarire == null) {
+            System.out.print("Urmarirea folderului (sarcina 23) este oprita. O pornesc acum? (d/n): ");
+            String r = citeste();
+            if (r == null || !(r.equalsIgnoreCase("d") || r.equalsIgnoreCase("da"))) {
+                System.out.println("Fara urmarire fisierele nu se cripteaza. Pornirea se face din optiunea 10.");
+                return;
+            }
+            urmarire = new Protejat();
+            porneste(urmarire);
+        }
+        int existente = fisiereEnc().size();
+        int minim = dinComanda ? Math.max(1, MIN_TEST - existente) : MIN_TEST;
+        System.out.print("Cate fisiere de test creez? (" + minim + "-" + MAX_TEST + ", Enter = " + minim + ", 0 = renunt): ");
+        String r = citeste();
+        int n;
+        try {
+            n = (r == null || r.isEmpty()) ? minim : Integer.parseInt(r);
+        } catch (NumberFormatException e) {
+            System.out.println("Numar invalid, nu s-a creat nimic.");
+            return;
+        }
+        if (n == 0) return;
+        if (n < minim || n > MAX_TEST) {
+            System.out.println("Numarul trebuie sa fie intre " + minim + " si " + MAX_TEST + ". Nu s-a creat nimic.");
+            return;
+        }
+
+        // fisierele se scriu intai intr-un folder temporar din afara celui urmarit
+        // si se muta gata scrise, ca sa nu fie criptate pe jumatate
+        Path tmp = IntegritateSistem.BAZA.resolve("tmp_test");
+        Files.createDirectories(tmp);
+        Files.createDirectories(urmarit());
+        String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd_HHmmss"));
+        String[] tipuri = {"txt", "csv", "png", "json", "log"};
+        for (int i = 1; i <= n; i++) {
+            String ext = tipuri[(i - 1) % tipuri.length];
+            String nume = "test_" + stamp + "_" + String.format("%02d", i) + "." + ext;
+            Path sursa = tmp.resolve(nume);
+            scrieFisierTest(sursa, ext, i);
+            Path dest = urmarit().resolve(nume);
+            try {
+                Files.move(sursa, dest, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException e) {
+                Files.move(sursa, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        System.out.println("Create " + n + " fisiere de test in " + urmarit() + ". Se asteapta criptarea...");
+
+        int tinta = existente + n;
+        long limita = System.currentTimeMillis() + (15 + 2L * n) * 1000;
+        int cate = existente;
+        while (System.currentTimeMillis() < limita) {
+            cate = fisiereEnc().size();
+            if (cate >= tinta) break;
+            Thread.sleep(500);
+        }
+        cate = fisiereEnc().size();
+        if (cate >= tinta) {
+            System.out.println("Gata: " + (cate - existente) + " fisiere criptate. In total: " + cate + ".");
+        } else {
+            System.out.println("Atentie: s-au criptat doar " + (cate - existente) + " din " + n
+                    + ". Restul se mai cripteaza in fundal (vezi optiunea 6 sau jurnalul, optiunea 5).");
+        }
+    }
+
+    // continut de test: text, csv, json, log sau imagine png generata din cod
+    static void scrieFisierTest(Path f, String ext, int nr) throws IOException {
+        switch (ext) {
+            case "png": scrieImagine(f, nr); break;
+            case "csv": {
+                StringBuilder sb = new StringBuilder("id;nume;valoare\n");
+                for (int i = 1; i <= 20; i++) sb.append(i).append(";produs_").append(i).append(';').append(i * nr * 7 % 100).append('\n');
+                Files.writeString(f, sb.toString(), java.nio.charset.StandardCharsets.UTF_8);
+                break;
+            }
+            case "json":
+                Files.writeString(f, "{\n  \"fisier\": " + nr + ",\n  \"tip\": \"test\",\n  \"scop\": \"verificare criptare AES-256-GCM\"\n}\n",
+                        java.nio.charset.StandardCharsets.UTF_8);
+                break;
+            case "log": {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i <= 30; i++) sb.append("linie ").append(i).append(" din jurnalul de test ").append(nr).append('\n');
+                Files.writeString(f, sb.toString(), java.nio.charset.StandardCharsets.UTF_8);
+                break;
+            }
+            default:
+                Files.writeString(f, "Fisier de test nr. " + nr + " pentru lucrarea 5 la Sisteme de operare.\n"
+                        + "Acest fisier se cripteaza singur dupa ce apare in folderul urmarit.\n",
+                        java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
+
+    // imagine simpla (gradient + forme), culori diferite pentru fiecare numar
+    static void scrieImagine(Path f, int nr) throws IOException {
+        System.setProperty("java.awt.headless", "true");
+        Random rnd = new Random(nr * 31L);
+        BufferedImage img = new BufferedImage(320, 200, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        try {
+            Color c1 = new Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+            Color c2 = new Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+            g.setPaint(new GradientPaint(0, 0, c1, 320, 200, c2));
+            g.fillRect(0, 0, 320, 200);
+            for (int i = 0; i < 6; i++) {
+                g.setColor(new Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256), 170));
+                g.fillOval(rnd.nextInt(240), rnd.nextInt(140), 30 + rnd.nextInt(60), 30 + rnd.nextInt(60));
+            }
+        } finally {
+            g.dispose();
+        }
+        ImageIO.write(img, "png", f.toFile());
+    }
+
     // ---------- comenzi ale sarcinii 19 ----------
 
     // 12: copia de referinta si copiile automate cu data in nume
@@ -343,7 +497,8 @@ public class Main {
     }
 
     // arata fisierele criptate numerotate si intoarce cel ales (null daca se renunta)
-    static Path alegeFisier() throws IOException {
+    static Path alegeFisier() throws Exception {
+        if (!asigura()) return null;
         List<Path> lista = fisiereEnc();
         if (lista.isEmpty()) {
             System.out.println("Nu exista fisiere criptate. Copiati ceva in " + urmarit());
