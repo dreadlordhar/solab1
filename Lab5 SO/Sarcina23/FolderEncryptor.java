@@ -1,16 +1,4 @@
-/*
- * Lucrarea de laborator 5, Sisteme de Operare
- * Sarcina 23: program care urmareste modificarile intr-un folder specificat,
- * cripteaza automat fisierele noi (javax.crypto, AES-256-GCM) si le muta
- * intr-un director protejat, tinand un jurnal al tuturor modificarilor.
- *
- * Autor: Zaicico Axinia, gr. IA-242
- *
- * Compilare:  javac FolderEncryptor.java
- * Pornire:    java FolderEncryptor [folderUrmarit] [folderProtejat] [--durata SECUNDE]
- *             (implicit: ./urmarit si ./protejat; fara --durata ruleaza pana la Ctrl+C)
- * Decriptare: java FolderEncryptor decrypt <fisier.enc | folderProtejat> <folderIesire>
- */
+// sarcina 23: urmarirea unui folder si criptarea fisierelor noi (autor: zaicico axinia, gr. ia-242)
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -56,6 +44,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -64,20 +53,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class FolderEncryptor {
-
-    /* ---------- constante ---------- */
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter TS_FILE = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS");
-    /** Semnatura de la inceputul fiecarui fisier criptat. */
+    // semnatura de la inceputul fiecarui fisier .enc
     private static final byte[] MAGIC = "SO5ENC01".getBytes(StandardCharsets.US_ASCII);
+    // aes in modul gcm: cripteaza si detecteaza modificarile
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
-    private static final int IV_LEN = 12;          // 96 biti, recomandat pentru GCM
-    private static final int TAG_BITS = 128;       // eticheta de autentificare
-    private static final long DEBOUNCE_MS = 1500;  // asteptam ca fisierul sa fie scris complet
-    private static final int MAX_ATTEMPTS = 20;    // incercari daca fisierul e inca blocat
+    // vector de initializare, nou pentru fiecare fisier
+    private static final int IV_LEN = 12;
+    // eticheta de autentificare gcm
+    private static final int TAG_BITS = 128;
+    // pauza ca fisierul sa fie scris complet inainte de criptare
+    private static final long DEBOUNCE_MS = 1500;
+    private static final int MAX_ATTEMPTS = 20;
     public static final String ENC_EXT = ".enc";
 
-    /* ---------- stare ---------- */
     private final Path watchDir;
     private final Path protectedDir;
     private final Path logFile;
@@ -86,10 +76,11 @@ public class FolderEncryptor {
     private final SecureRandom random = new SecureRandom();
     private final WatchService watcher;
     private final Map<WatchKey, Path> watchKeys = new HashMap<>();
-    /** Fisiere pentru care exista deja o criptare programata (debounce). */
+    // criptari programate, cel mult una pentru fiecare fisier
     private final Map<Path, ScheduledFuture<?>> pending = new ConcurrentHashMap<>();
-    /** Fisiere sterse de program dupa criptare, ca stergerea lor sa nu fie raportata ca actiune a utilizatorului. */
+    // fisiere sterse chiar de program dupa criptare
     private final Set<Path> movedByUs = ConcurrentHashMap.newKeySet();
+    // firul separat in care se face criptarea
     private final ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r, "criptare");
         t.setDaemon(true);
@@ -98,8 +89,11 @@ public class FolderEncryptor {
     private final AtomicInteger encrypted = new AtomicInteger();
     private final AtomicInteger errors = new AtomicInteger();
     private volatile boolean stopped = false;
+    // se deblocheaza cand urmarirea a pornit (asteptat de main)
+    private final CountDownLatch ready = new CountDownLatch(1);
     private final java.util.concurrent.atomic.AtomicBoolean stopping = new java.util.concurrent.atomic.AtomicBoolean();
 
+    // verifica folderele, incarca cheia si protejeaza directoarele
     public FolderEncryptor(Path watchDir, Path protectedDir, Path keyFile, Path logFile)
             throws IOException, GeneralSecurityException {
         this.watchDir = watchDir.toAbsolutePath().normalize();
@@ -135,11 +129,7 @@ public class FolderEncryptor {
     public Path getManifestFile() { return manifestFile; }
     public SecretKey getKey() { return key; }
 
-    /* =====================================================================
-     *  Jurnal
-     * ===================================================================== */
-
-    /** Scrie o linie in jurnal (fisier + consola). Este publica ca sa poata fi folosita si de alte module. */
+    // scrie evenimentul pe ecran si in jurnal
     public synchronized void log(String event, String path, String details) {
         String line = String.format("%s | %-16s | %-40s | %s",
                 LocalDateTime.now().format(TS), event, path, details == null ? "" : details);
@@ -158,11 +148,7 @@ public class FolderEncryptor {
                                         : abs.toString();
     }
 
-    /* =====================================================================
-     *  Cheia de criptare si protejarea directoarelor (apeluri ale SO)
-     * ===================================================================== */
-
-    /** Incarca cheia AES-256 din fisier sau o genereaza la prima pornire. */
+    // citeste cheia aes-256 sau o genereaza la prima pornire
     private SecretKey loadOrCreateKey(Path keyFile) throws IOException, GeneralSecurityException {
         Files.createDirectories(keyFile.getParent());
         if (Files.exists(keyFile)) {
@@ -178,11 +164,7 @@ public class FolderEncryptor {
         return k;
     }
 
-    /**
-     * Restrictioneaza accesul la director doar pentru utilizatorul curent.
-     * Windows: icacls (se elimina drepturile mostenite, ramane doar utilizatorul curent cu control total).
-     * Linux/macOS: drepturi POSIX rwx------ (700).
-     */
+    // acces doar pentru utilizatorul curent: icacls pe windows, chmod 700 pe linux
     private void protectDirectory(Path dir) {
         String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         try {
@@ -202,28 +184,23 @@ public class FolderEncryptor {
         }
     }
 
-    /** Lanseaza o comanda de sistem prin ProcessBuilder si intoarce codul de iesire. */
+    // porneste o comanda de sistem si intoarce codul de iesire
     static int runCommand(String... cmd) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
         Process p = pb.start();
         try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-            while (r.readLine() != null) { /* golim iesirea ca procesul sa nu se blocheze */ }
+            while (r.readLine() != null) {  }
         }
         return p.waitFor();
     }
 
-    /* =====================================================================
-     *  Criptare / decriptare
-     *  Format fisier .enc:  MAGIC(8) | lungime nume(2) | nume relativ (UTF-8) | IV(12) | date criptate + tag GCM(16)
-     *  Antetul este folosit ca AAD, deci si numele fisierului este protejat la modificare.
-     * ===================================================================== */
-
+    // antetul .enc: semnatura, numele fisierului si iv; este si el autentificat (aad)
     private static byte[] header(byte[] name, byte[] iv) {
         return ByteBuffer.allocate(MAGIC.length + 2 + name.length + iv.length)
                 .put(MAGIC).putShort((short) name.length).put(name).put(iv).array();
     }
 
-    /** Cripteaza un fisier din folderul urmarit si il muta in directorul protejat. Intoarce fisierul .enc. */
+    // cripteaza fisierul, il pune in folderul protejat si sterge originalul
     public Path encryptFile(Path src) throws IOException, GeneralSecurityException {
         src = src.toAbsolutePath().normalize();
         Path relative = watchDir.relativize(src);
@@ -252,13 +229,14 @@ public class FolderEncryptor {
             Files.deleteIfExists(tmp);
             throw e;
         }
+        // se scrie intai in .part si apoi se redenumeste, ca sa nu ramana fisiere pe jumatate
         Files.move(tmp, target, StandardCopyOption.ATOMIC_MOVE);
         HexFormat hex = HexFormat.of();
         String plainHash = hex.formatHex(shaPlain.digest());
         String encHash = hex.formatHex(shaEnc.digest());
         log("CRIPTARE", rel(src), size + " B, AES-256-GCM, SHA-256 " + plainHash.substring(0, 16) + "...");
 
-        // originalul se sterge doar dupa ce copia criptata a fost scrisa complet
+        // originalul se sterge abia dupa ce copia criptata este gata
         movedByUs.add(src);
         try {
             Files.delete(src);
@@ -287,7 +265,7 @@ public class FolderEncryptor {
         return p.resolveSibling(base + "_" + LocalDateTime.now().format(TS_FILE) + ENC_EXT);
     }
 
-    /** Decripteaza un fisier .enc in folderul indicat; verifica eticheta GCM. Intoarce fisierul restaurat. */
+    // decripteaza un .enc si verifica eticheta gcm
     public static Path decryptFile(Path enc, Path outDir, SecretKey key) throws IOException, GeneralSecurityException {
         outDir = outDir.toAbsolutePath().normalize();
         try (DataInputStream in = new DataInputStream(new BufferedInputStream(Files.newInputStream(enc)))) {
@@ -316,10 +294,7 @@ public class FolderEncryptor {
         }
     }
 
-    /* =====================================================================
-     *  Urmarirea folderului (WatchService)
-     * ===================================================================== */
-
+    // watchservice anunta cand un fisier apare, se schimba sau se sterge
     private void register(Path dir) throws IOException {
         WatchKey k = dir.register(watcher,
                 StandardWatchEventKinds.ENTRY_CREATE,
@@ -334,32 +309,33 @@ public class FolderEncryptor {
         }
     }
 
-    /** Fisiere temporare create de editoare/browsere: se inregistreaza in jurnal, dar nu se cripteaza. */
+    // fisierele temporare ale editoarelor nu se cripteaza
     private static boolean isIgnored(Path p) {
         String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
         return n.startsWith("~$") || n.startsWith(".~") || n.endsWith(".tmp") || n.endsWith(".part")
                 || n.endsWith(".crdownload") || n.endsWith(".partial") || n.endsWith(".swp") || n.endsWith("~");
     }
 
-    /** Programeaza criptarea dupa o pauza; un nou eveniment pentru acelasi fisier reporneste pauza. */
+    // programeaza criptarea dupa o pauza; un eveniment nou reporneste pauza
     private void schedule(Path file, long delayMs, int attempt) {
         ScheduledFuture<?> f;
         try {
             f = worker.schedule(() -> process(file, attempt), delayMs, TimeUnit.MILLISECONDS);
         } catch (java.util.concurrent.RejectedExecutionException e) {
-            return;                                     // programul se opreste
+            return;
         }
         ScheduledFuture<?> old = pending.put(file, f);
         if (old != null && old != f) old.cancel(false);
     }
 
+    // verifica ca fisierul nu se mai scrie, apoi il cripteaza (cu reincercari)
     private void process(Path file, int attempt) {
         pending.remove(file);
-        if (!Files.isRegularFile(file)) return;         // deja criptat sau sters intre timp
+        if (!Files.isRegularFile(file)) return;
         try {
             long s1 = Files.size(file);
             Thread.sleep(300);
-            if (Files.size(file) != s1) {                 // inca se scrie
+            if (Files.size(file) != s1) {
                 schedule(file, DEBOUNCE_MS, attempt);
                 return;
             }
@@ -383,18 +359,19 @@ public class FolderEncryptor {
         }
     }
 
-    /** Porneste urmarirea. durataSec <= 0 inseamna fara limita (pana la Ctrl+C). */
+    // bucla principala: asculta evenimentele folderului urmarit
     public void watch(long durataSec) throws IOException, InterruptedException {
         log("START", rel(watchDir), "director protejat: " + protectedDir);
         registerAll(watchDir);
 
-        // fisierele care existau deja in folder la pornire sunt tratate ca noi
         try (Stream<Path> s = Files.walk(watchDir)) {
             s.filter(Files::isRegularFile).forEach(p -> {
                 log("EXISTENT", rel(p), "gasit la pornire");
                 handleNewFile(p);
             });
         }
+
+        ready.countDown();
 
         long deadline = durataSec > 0 ? System.currentTimeMillis() + durataSec * 1000 : Long.MAX_VALUE;
         while (!stopped) {
@@ -404,7 +381,7 @@ public class FolderEncryptor {
             try {
                 wk = watcher.poll(Math.min(left, 1000), TimeUnit.MILLISECONDS);
             } catch (ClosedWatchServiceException e) {
-                break;                                  // oprire cu Ctrl+C: serviciul a fost inchis de stop()
+                break;
             }
             if (wk == null) continue;
             Path dir = watchKeys.get(wk);
@@ -463,22 +440,24 @@ public class FolderEncryptor {
         try { return Files.size(p) + " B"; } catch (IOException e) { return ""; }
     }
 
-    /** Opreste urmarirea si asteapta terminarea criptarilor in curs. */
+    // opreste urmarirea si asteapta criptarile in curs
     public void stop() {
         if (!stopping.compareAndSet(false, true)) return;
         stopped = true;
+        ready.countDown();
         worker.shutdown();
         try { worker.awaitTermination(10, TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
         try { watcher.close(); } catch (IOException ignored) { }
         log("STOP", rel(watchDir), "fisiere criptate: " + encrypted.get() + ", erori: " + errors.get());
     }
 
+    public boolean awaitReady(long millis) throws InterruptedException {
+        return ready.await(millis, TimeUnit.MILLISECONDS);
+    }
+
     public int getEncryptedCount() { return encrypted.get(); }
 
-    /* =====================================================================
-     *  main
-     * ===================================================================== */
-
+    // pornire singura: urmarit, protejat, --durata sau decrypt
     public static void main(String[] args) throws Exception {
         List<String> a = new ArrayList<>(Arrays.asList(args));
         long durata = 0;

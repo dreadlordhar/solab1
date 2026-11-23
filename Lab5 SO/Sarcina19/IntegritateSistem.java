@@ -1,3 +1,4 @@
+// sarcina 19: verificarea periodica a integritatii fisierelor
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -9,36 +10,55 @@ import java.util.concurrent.*;
 import java.util.stream.*;
 
 public class IntegritateSistem {
+    // folderul de lucru; celelalte cai pornesc de aici
+    static Path BAZA = Paths.get(System.getProperty("user.home"), "SO_Lab5");
+    // fisierele supravegheate
+    static Path MONITORIZAT;
+    // copia buna, folosita la restaurare
+    static Path REFERINTA;
+    // copii vechi, cu data in numele folderului
+    static Path ARHIVA;
+    static Path JURNAL;
 
-    // -- Cai
-    static final Path BAZA = Paths.get(System.getProperty("user.home"), "SO_Lab5").toAbsolutePath().normalize();
-    // fisierele "critice" care sunt supravegheate
-    static final Path MONITORIZAT = BAZA.resolve("monitorizat");
-    // copia de rezerva folosita la restaurare
-    static final Path REFERINTA = BAZA.resolve("backup").resolve("referinta");
-    // copii salvate in timp, cu data in numele folderului (backup automat)
-    static final Path ARHIVA = BAZA.resolve("backup").resolve("arhiva");
-    static final Path JURNAL = BAZA.resolve("jurnal.log");
+    static {
+        folosesteBaza(BAZA);
+    }
 
-    // formatul datei pentru jurnal si pentru numele folderelor de backup
+    // muta toate caile intr-un alt folder de lucru (folosit de meniul din main)
+    static void folosesteBaza(Path baza) {
+        BAZA = baza.toAbsolutePath().normalize();
+        MONITORIZAT = BAZA.resolve("monitorizat");
+        REFERINTA = BAZA.resolve("backup").resolve("referinta");
+        ARHIVA = BAZA.resolve("backup").resolve("arhiva");
+        JURNAL = BAZA.resolve("jurnal.log");
+        cicluri = 0;
+    }
+
     static final DateTimeFormatter FMT_JURNAL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     static final DateTimeFormatter FMT_FOLDER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-    // obiect folosit pentru sincronizare, ca doua fire de executie sa nu lucreze
-    // simultan cu fisierele
+    // lacat comun: un singur fir lucreaza cu fisierele odata
     static final Object BLOCARE = new Object();
 
-    // la cate verificari periodice se face un backup automat
+    // la cate verificari se face un backup automat
     static final int CICLURI_PANA_LA_BACKUP_AUTOMAT = 6;
 
+    // firul din fundal pentru verificarea periodica
     static ScheduledExecutorService planificator;
     static int cicluri = 0;
 
-    // -- Jurnal
-    // se scrie un mesaj pe ecran si in fisierul jurnal.log, cu data si ora curenta
+    // false = mesajele "ok" ajung doar in fisier, nu pe ecran
+    static volatile boolean OK_PERIODIC_IN_CONSOLA = true;
+
     static void jurnal(String nivel, String mesaj) {
+        jurnal(nivel, mesaj, true);
+    }
+
+    // scrie in jurnal.log cu data si ora; optional si pe ecran
+    static synchronized void jurnal(String nivel, String mesaj, boolean peEcran) {
         String linie = LocalDateTime.now().format(FMT_JURNAL) + " [" + nivel + "] " + mesaj;
-        System.out.println(linie);
+        if (peEcran)
+            System.out.println(linie);
         try {
             Files.createDirectories(BAZA);
             Files.writeString(JURNAL, linie + System.lineSeparator(), StandardCharsets.UTF_8,
@@ -48,10 +68,7 @@ public class IntegritateSistem {
         }
     }
 
-    // - Utilitare
-    // calculeaza amprenta SHA-256 a unui fisier. Daca doua fisiere au aceeasi
-    // amprenta continutul lor este identic; daca fisierul se schimba, amprenta se
-    // schimba.
+    // amprenta fisierului; daca continutul se schimba, se schimba si amprenta
     static String sha256(Path fisier) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         try (var in = Files.newInputStream(fisier)) {
@@ -66,7 +83,7 @@ public class IntegritateSistem {
         return sb.toString();
     }
 
-    // Returneaza calea doar daca ramane in interiorul folderului radacina
+    // refuza caile care ies din folderul de lucru (../)
     static Path sigur(Path radacina, Path relativ) {
         Path p = radacina.resolve(relativ).normalize();
         if (!p.startsWith(radacina))
@@ -74,7 +91,7 @@ public class IntegritateSistem {
         return p;
     }
 
-    // Returneaza lista fisierelor dintr-un folder ca cai relative.
+    // toate fisierele dintr-un folder, ca cai relative
     static List<Path> listaFisiere(Path radacina) throws Exception {
         if (!Files.exists(radacina))
             return new ArrayList<>();
@@ -84,7 +101,7 @@ public class IntegritateSistem {
         }
     }
 
-    // Copiaza un fisier dintr-un folder in altul, pastrand calea relativa.
+    // copiaza un fisier pastrand calea relativa
     static void copiaza(Path sursaRad, Path destRad, Path relativ) throws Exception {
         Path sursa = sigur(sursaRad, relativ);
         Path dest = sigur(destRad, relativ);
@@ -92,14 +109,16 @@ public class IntegritateSistem {
         Files.copy(sursa, dest, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    // - Initializare
-    // Creeaza folderele necesare si cateva fisiere de test, apoi face primul
-    // backup.
     static void initializare() throws Exception {
+        initializare(true);
+    }
+
+    // creeaza folderele; cu creeazaDemo adauga si fisiere de test
+    static void initializare(boolean creeazaDemo) throws Exception {
         Files.createDirectories(MONITORIZAT);
         Files.createDirectories(REFERINTA);
         Files.createDirectories(ARHIVA);
-        if (listaFisiere(MONITORIZAT).isEmpty()) {
+        if (creeazaDemo && listaFisiere(MONITORIZAT).isEmpty()) {
             Files.writeString(MONITORIZAT.resolve("config.ini"), "[sistem]\nmod=normal\nversiune=1.0\n");
             Files.writeString(MONITORIZAT.resolve("utilizatori.dat"), "admin;user1;user2\n");
             Files.writeString(MONITORIZAT.resolve("setari_retea.cfg"), "dhcp=true\ndns=8.8.8.8\n");
@@ -111,11 +130,7 @@ public class IntegritateSistem {
         jurnal("INFO", "Initializare finalizata. Folder de lucru: " + BAZA);
     }
 
-    // - Backup manual
-    // Copiaza starea curenta a fisierelor in folderul de referinta (cel folosit la
-    // restaurare).
-    // Daca exista fisiere diferite de referinta, cere confirmare inainte sa o
-    // inlocuiasca.
+    // starea curenta devine noua referinta
     static void backupManual(boolean cereConfirmare) throws Exception {
         synchronized (BLOCARE) {
             if (cereConfirmare) {
@@ -139,8 +154,7 @@ public class IntegritateSistem {
         }
     }
 
-    // - Backup automat
-    // Salveaza o copie a fisierelor intr-un folder cu data si ora in nume
+    // copie cu data in nume; nu schimba referinta
     static void instantaneu(String tip) throws Exception {
         Path dest = ARHIVA.resolve(LocalDateTime.now().format(FMT_FOLDER) + "_" + tip);
         int nr = 0;
@@ -151,11 +165,7 @@ public class IntegritateSistem {
         jurnal("BACKUP", "Instantaneu (" + tip + "): " + nr + " fisier(e) -> " + dest.getFileName());
     }
 
-    // - Verificare si restaurare
-    // Compara fiecare fisier din referinta cu cel din folderul monitorizat
-    // Un fisier lipsa este marcat STERS, iar unul cu amprenta diferita este marcat
-    // MODIFICAT.
-    // Returneaza numarul de fisiere deteriorate.
+    // compara amprentele cu referinta: lipsa = sters, amprenta diferita = modificat
     static int verifica(boolean restaurare, boolean scrieInJurnal) throws Exception {
         synchronized (BLOCARE) {
             int probleme = 0;
@@ -170,17 +180,15 @@ public class IntegritateSistem {
                     stare = "MODIFICAT";
                 }
                 if (stare == null)
-                    continue; // fisierul este intact
+                    continue;
                 probleme++;
-                if (scrieInJurnal) {// spune daca problemele gasite se noteaza in jurnal.
+                if (scrieInJurnal) {
                     jurnal("DETERIORAT", rel + " - " + stare + " (detectat la "
                             + LocalDateTime.now().format(FMT_JURNAL) + ")");
                 }
                 if (restaurare)
-                    restaureaza(rel, copie, original); // restaurare automata a fisierelor deteriorate
+                    restaureaza(rel, copie, original);
             }
-            // fisierele care exista doar in folderul monitorizat sunt doar semnalate, nu
-            // sunt considerate deteriorate
             if (scrieInJurnal) {
                 for (Path rel : listaFisiere(MONITORIZAT)) {
                     if (!dinReferinta.contains(rel)) {
@@ -192,8 +200,7 @@ public class IntegritateSistem {
         }
     }
 
-    // Reface un fisier din copia de rezerva si verifica prin amprenta ca
-    // restaurarea a reusit.
+    // copiaza fisierul din referinta si verifica amprenta
     static void restaureaza(Path rel, Path copie, Path original) {
         try {
             Files.createDirectories(original.getParent());
@@ -208,17 +215,20 @@ public class IntegritateSistem {
         }
     }
 
-    // - Monitorizare periodica
-    // verifica fisierele la intervale regulate
-    // La fiecare verificare deteriorarile sunt restaurate
     static void pornesteMonitorizarea(int secunde) {
+        pornesteMonitorizarea(secunde, 0);
+    }
+
+    // verifica la fiecare n secunde si restaureaza ce s-a stricat
+    static void pornesteMonitorizarea(int secunde, int intarziereInitiala) {
         if (planificator != null && !planificator.isShutdown()) {
             System.out.println("Monitorizarea ruleaza deja.");
             return;
         }
         planificator = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "monitor-integritate");
-            t.setDaemon(true); // firul se opreste singur cand se inchide programul
+            // firul se opreste odata cu programul
+            t.setDaemon(true);
             return t;
         });
         planificator.scheduleWithFixedDelay(() -> {
@@ -226,18 +236,17 @@ public class IntegritateSistem {
                 cicluri++;
                 int probleme = verifica(true, true);
                 if (probleme == 0)
-                    jurnal("OK", "Verificare periodica: toate fisierele sunt intacte.");
+                    jurnal("OK", "Verificare periodica: toate fisierele sunt intacte.", OK_PERIODIC_IN_CONSOLA);
                 if (cicluri % CICLURI_PANA_LA_BACKUP_AUTOMAT == 0)
                     instantaneu("automat");
             } catch (Exception e) {
                 jurnal("EROARE", "Verificare periodica esuata: " + e.getMessage());
             }
-        }, 0, secunde, TimeUnit.SECONDS);
+        }, intarziereInitiala, secunde, TimeUnit.SECONDS);
         jurnal("INFO", "Monitorizare pornita (interval " + secunde + " s; backup automat la fiecare "
                 + CICLURI_PANA_LA_BACKUP_AUTOMAT + " cicluri).");
     }
 
-    // Opreste verificarea periodica, daca ruleaza
     static void opresteMonitorizarea() {
         if (planificator != null) {
             planificator.shutdownNow();
@@ -248,12 +257,11 @@ public class IntegritateSistem {
         }
     }
 
-    // Windows: sfc
     static boolean esteWindows() {
         return System.getProperty("os.name", "").toLowerCase().startsWith("windows");
     }
 
-    // Ruleaza utilitarul Windows "sfc" (System File Checker) si afiseaza rezultatul
+    // sfc = utilitar windows care verifica fisierele de sistem
     static void ruleazaSfc(String argument) {
         if (!esteWindows()) {
             System.out.println("sfc este disponibil doar pe Windows.");
@@ -266,8 +274,7 @@ public class IntegritateSistem {
             Process p = new ProcessBuilder(sfc.toString(), argument).redirectErrorStream(true).start();
             byte[] out = p.getInputStream().readAllBytes();
             int cod = p.waitFor();
-            // sfc scrie adesea textul in UTF-16LE, deci verificam codarea inainte de
-            // afisare
+            // sfc scrie adesea in utf-16, deci verificam codarea
             String text = (out.length > 1 && out[1] == 0)
                     ? new String(out, StandardCharsets.UTF_16LE)
                     : new String(out, Charset.defaultCharset());
@@ -280,8 +287,7 @@ public class IntegritateSistem {
         }
     }
 
-    // -Simulare deteriorare
-    // Modifica un fisier si sterge altul, doar in folderul demonstrativ,pn testare
+    // strica fisiere de test ca sa se vada detectarea si restaurarea
     static void simuleazaDeteriorare() throws Exception {
         Path f1 = sigur(MONITORIZAT, Paths.get("config.ini"));
         Path f2 = sigur(MONITORIZAT, Paths.get("utilizatori.dat"));
@@ -294,17 +300,16 @@ public class IntegritateSistem {
         System.out.println("Simulat: config.ini modificat si utilizatori.dat sters (doar in " + MONITORIZAT + ").");
     }
 
-    // -Interfata in consola
+    // citirea comenzilor din consola
     static Scanner scanner = new Scanner(System.in);
 
-    // Pune o intrebare si returneaza true daca utilizatorul raspunde "d" sau "da".
+    // intreaba si accepta "d" sau "da"
     static boolean confirma(String intrebare) {
         System.out.print(intrebare);
         String r = scanner.nextLine().trim().toLowerCase();
         return r.equals("d") || r.equals("da");
     }
 
-    // Afiseaza continutul fisierului jurnal.log.
     static void afiseazaJurnal() throws Exception {
         if (!Files.exists(JURNAL)) {
             System.out.println("Jurnalul este gol.");
@@ -314,7 +319,7 @@ public class IntegritateSistem {
     }
 
     static void meniu() {
-        System.out.println("\n===== Verificare integritate fisiere de sistem =====");
+        System.out.println("\n===== Sarcina 19: verificare integritate fisiere =====");
         System.out.println("1. Initializare (folder de lucru + fisiere demo + backup initial)");
         System.out.println("2. Backup manual");
         System.out.println("3. Verificare acum (cu restaurare automata)");
@@ -325,75 +330,83 @@ public class IntegritateSistem {
         System.out.println("8. Windows: sfc /verifyonly (doar citire)");
         System.out.println("9. Windows: sfc /scannow (necesita administrator, cu confirmare)");
         System.out.println("10. Simuleaza deteriorare (doar in folderul demo)");
-        System.out.println("0. Iesire");
+        System.out.println("0. Inapoi");
         System.out.print("Alegere: ");
     }
 
-    // Punctul-intrare al programului
     public static void main(String[] args) {
         System.out.println("Folder de lucru: " + BAZA);
         try {
             initializare();
-            while (true) {
-                meniu();
-                String alegere = scanner.nextLine().trim();
-                try {
-                    switch (alegere) {
-                        case "1":
-                            initializare();
-                            break;
-                        case "2":
-                            backupManual(true);
-                            break;
-                        case "3": {
-                            int n = verifica(true, true);
-                            if (n == 0)
-                                jurnal("OK", "Toate fisierele sunt intacte.");
-                            break;
-                        }
-                        case "4": {
-                            int n = verifica(false, true);
-                            if (n == 0)
-                                jurnal("OK", "Toate fisierele sunt intacte.");
-                            break;
-                        }
-                        case "5": {
-                            System.out.print("Interval in secunde (minim 5): ");
-                            int s = Integer.parseInt(scanner.nextLine().trim());
-                            pornesteMonitorizarea(Math.max(5, s));
-                            break;
-                        }
-                        case "6":
-                            opresteMonitorizarea();
-                            break;
-                        case "7":
-                            afiseazaJurnal();
-                            break;
-                        case "8":
-                            ruleazaSfc("/verifyonly");
-                            break;
-                        case "9":
-                            if (confirma("sfc /scannow poate repara fisiere reale ale Windows. Continuati? (d/n): "))
-                                ruleazaSfc("/scannow");
-                            break;
-                        case "10":
-                            simuleazaDeteriorare();
-                            break;
-                        case "0":
-                            opresteMonitorizarea();
-                            System.out.println("La revedere!");
-                            return;
-                        default:
-                            System.out.println("Optiune necunoscuta.");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Valoare numerica invalida.");
-                } catch (Exception e) {
-                    jurnal("EROARE", e.getMessage());
-                }
-            }
+            ruleazaMeniu();
         } catch (Exception e) {
             System.out.println("Eroare fatala: " + e.getMessage());
+        }
+        System.out.println("La revedere!");
+    }
+
+    // bucla meniului sarcinii 19; se termina la optiunea 0
+    static void ruleazaMeniu() {
+        while (true) {
+            meniu();
+            if (!scanner.hasNextLine()) {
+                opresteMonitorizarea();
+                return;
+            }
+            String alegere = scanner.nextLine().trim();
+            try {
+                switch (alegere) {
+                    case "1":
+                        initializare();
+                        break;
+                    case "2":
+                        backupManual(true);
+                        break;
+                    case "3": {
+                        int n = verifica(true, true);
+                        if (n == 0)
+                            jurnal("OK", "Toate fisierele sunt intacte.");
+                        break;
+                    }
+                    case "4": {
+                        int n = verifica(false, true);
+                        if (n == 0)
+                            jurnal("OK", "Toate fisierele sunt intacte.");
+                        break;
+                    }
+                    case "5": {
+                        System.out.print("Interval in secunde (minim 5): ");
+                        int sec = Integer.parseInt(scanner.nextLine().trim());
+                        pornesteMonitorizarea(Math.max(5, sec));
+                        break;
+                    }
+                    case "6":
+                        opresteMonitorizarea();
+                        break;
+                    case "7":
+                        afiseazaJurnal();
+                        break;
+                    case "8":
+                        ruleazaSfc("/verifyonly");
+                        break;
+                    case "9":
+                        if (confirma("sfc /scannow poate repara fisiere reale ale Windows. Continuati? (d/n): "))
+                            ruleazaSfc("/scannow");
+                        break;
+                    case "10":
+                        simuleazaDeteriorare();
+                        break;
+                    case "0":
+                        opresteMonitorizarea();
+                        return;
+                    default:
+                        System.out.println("Optiune necunoscuta.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Valoare numerica invalida.");
+            } catch (Exception e) {
+                jurnal("EROARE", e.getMessage());
+            }
         }
     }
 }
