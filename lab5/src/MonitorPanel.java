@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.*;
+import java.awt.image.BufferedImage;
 
 public class MonitorPanel extends JPanel {
 
@@ -29,6 +30,9 @@ public class MonitorPanel extends JPanel {
 
     private FolderMonitor monitor;
     private EventLogger logger;
+
+    private TrayIcon trayIcon;
+    private boolean trayUnavailable;
 
     private long session = 0;
 
@@ -191,7 +195,7 @@ public class MonitorPanel extends JPanel {
                         "Last event: " + event);
 
                     Toolkit.getDefaultToolkit().beep();
-
+                    showWindowsNotification(event);
                     if (event.equals(
                             "Folder is no longer accessible.")) {
                         stopMonitoring();
@@ -245,9 +249,81 @@ public class MonitorPanel extends JPanel {
             startButton.setEnabled(logger != null);
             selectButton.setEnabled(true);
             stopButton.setEnabled(false);
+
+            if (trayIcon != null) {
+            SystemTray.getSystemTray().remove(trayIcon);
+            trayIcon = null;
+            }
+
+trayUnavailable = false;
         }
     }
 
+    private void showWindowsNotification(String event) {
+
+        if (trayUnavailable || !SystemTray.isSupported()) {
+            return;
+        }
+
+        try {
+
+            if (trayIcon == null) {
+
+                BufferedImage image = new BufferedImage(
+                        32, 32, BufferedImage.TYPE_INT_ARGB);
+
+                Graphics2D graphics = image.createGraphics();
+
+                graphics.setColor(new Color(40, 110, 200));
+                graphics.fillRoundRect(0, 0, 32, 32, 8, 8);
+
+                graphics.setColor(Color.WHITE);
+                graphics.setFont(new Font(
+                        "Arial", Font.BOLD, 20));
+
+                graphics.drawString("F", 10, 24);
+                graphics.dispose();
+
+                trayIcon = new TrayIcon(
+                        image, "System Security & Monitoring");
+
+                trayIcon.setImageAutoSize(true);
+
+                SystemTray.getSystemTray().add(trayIcon);
+            }
+
+            String title = "Folder Monitor";
+            String message = event;
+
+            if (event.startsWith("CREATED:")) {
+
+                title = "File created";
+
+            } else if (event.startsWith("MODIFIED:")) {
+
+                title = "File modified";
+
+            } else if (event.startsWith("DELETED:")) {
+
+                title = "File deleted";
+            }
+
+            trayIcon.displayMessage(
+                    title,
+                    message,
+                    TrayIcon.MessageType.INFO
+            );
+
+        } catch (AWTException | RuntimeException e) {
+
+            trayIcon = null;
+            trayUnavailable = true;
+
+            output.append("Notification error: "
+                    + e.getMessage() + "\n");
+        }
+    }
+    
     private void showLogs() {
 
         try {
