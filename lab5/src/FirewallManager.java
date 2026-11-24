@@ -17,7 +17,20 @@ public class FirewallManager {
 
         if (os.startsWith("windows")) {
 
-            return execute(
+    String status = execute(
+        "powershell.exe", "-NoProfile", "-Command",
+        "$rules = Get-NetFirewallRule " +
+        "-PolicyStore PersistentStore -ErrorAction Stop; " +
+        "if ($rules | Where-Object { " +
+        "$_.DisplayName -eq 'SO_Lab5_8080' }) " +
+        "{ 'EXISTS' } else { 'ABSENT' }"
+    );
+
+    if (status.trim().equals("EXISTS")) {
+        return "Firewall rule already exists.";
+    }
+
+    return execute(
                 "netsh", "advfirewall", "firewall",
                 "add", "rule",
                 "name=" + RULE_NAME,
