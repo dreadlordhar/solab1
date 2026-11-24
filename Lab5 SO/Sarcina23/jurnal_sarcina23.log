@@ -1,0 +1,23 @@
+2026-11-23 20:31:39 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:31:39 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\cheie | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:31:39 | START            | urmarit/                                 | director protejat: C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat
+2026-11-23 20:34:19 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:34:20 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\cheie | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:34:20 | START            | urmarit/                                 | director protejat: C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat
+2026-11-23 20:37:21 | CREARE           | urmarit/filo 8.docx                      | 39478 B
+2026-11-23 20:37:21 | MODIFICARE       | urmarit/filo 8.docx                      | 39478 B
+2026-11-23 20:37:21 | MODIFICARE       | urmarit/filo 8.docx                      | 39478 B
+2026-11-23 20:37:23 | CRIPTARE         | urmarit/filo 8.docx                      | 39478 B, AES-256-GCM, SHA-256 0d63fe138add9139...
+2026-11-23 20:37:23 | STERGERE         | urmarit/filo 8.docx                      | originalul a fost eliminat dupa criptare
+2026-11-23 20:37:23 | MUTARE           | urmarit/filo 8.docx                      | in protejat/filo 8.docx.enc
+2026-11-23 20:41:14 | STOP             | urmarit/                                 | fisiere criptate: 1, erori: 0
+2026-11-23 20:48:37 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:48:37 | PROTEJARE        | C:\Users\user\Desktop\Lab5 SO\Sarcina23\cheie | icacls, acces doar pentru WIN-6D0QC7GR8T3\user (cod iesire 0)
+2026-11-23 20:48:37 | START            | urmarit/                                 | director protejat: C:\Users\user\Desktop\Lab5 SO\Sarcina23\protejat
+2026-11-23 20:48:59 | CREARE           | urmarit/filo 5.docx                      | 11224 B
+2026-11-23 20:48:59 | MODIFICARE       | urmarit/filo 5.docx                      | 11224 B
+2026-11-23 20:48:59 | MODIFICARE       | urmarit/filo 5.docx                      | 11224 B
+2026-11-23 20:49:01 | CRIPTARE         | urmarit/filo 5.docx                      | 11224 B, AES-256-GCM, SHA-256 669c346c0545ff70...
+2026-11-23 20:49:01 | STERGERE         | urmarit/filo 5.docx                      | originalul a fost eliminat dupa criptare
+2026-11-23 20:49:01 | MUTARE           | urmarit/filo 5.docx                      | in protejat/filo 5.docx.enc
+2026-11-23 20:49:36 | STOP             | urmarit/                                 | fisiere criptate: 1, erori: 0
