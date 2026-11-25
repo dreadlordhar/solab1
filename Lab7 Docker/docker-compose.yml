@@ -1,0 +1,66 @@
+# Lab 7 – varianta 3 (dificila):
+#   container 1: pagina CV (HTML)            -> cv-web
+#   container 2: propriile imagini (poze)    -> cv-images
+#   container 3: CSS (foaie de stil)         -> cv-css
+#   container 4: lab 1 (aplicatia Timere)    -> cv-lab1  (acces din browser prin noVNC)
+name: lab7-cv
+
+services:
+  css:
+    build: ./css
+    image: cv-css:1.0
+    container_name: cv-css
+    ports:
+      - "8082:80"              # acces direct: http://localhost:8082/style.css
+    networks: [cv-net]
+    mem_limit: 32m
+    cpus: 0.25
+    restart: unless-stopped
+
+  images:
+    build: ./images
+    image: cv-images:1.0
+    container_name: cv-images
+    ports:
+      - "8081:80"              # acces direct: http://localhost:8081
+    networks: [cv-net]
+    mem_limit: 64m
+    cpus: 0.25
+    restart: unless-stopped
+
+  web:
+    build: ./web
+    image: cv-web:1.0
+    container_name: cv-web
+    ports:
+      - "8080:80"              # site: http://localhost:8080
+    depends_on:
+      css:
+        condition: service_healthy
+      images:
+        condition: service_healthy
+    networks: [cv-net]
+    volumes:
+      - cv-logs:/var/log/nginx # jurnalele raman si dupa stergerea containerului
+    mem_limit: 64m
+    cpus: 0.25
+    restart: unless-stopped
+
+  lab1:
+    build: ./lab1
+    image: cv-lab1:1.0
+    container_name: cv-lab1
+    ports:
+      - "6080:6080"            # aplicatia Swing in browser: http://localhost:6080
+    networks: [cv-net]
+    mem_limit: 512m
+    cpus: 1
+    shm_size: "256m"
+    restart: unless-stopped
+
+networks:
+  cv-net:
+    driver: bridge
+
+volumes:
+  cv-logs:

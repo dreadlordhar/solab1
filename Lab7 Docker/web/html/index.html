@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tîrgola Aurica – CV</title>
+  <!-- CSS-ul vine din containerul cv-css, prin /css/ -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="hero">
+    <!-- poza vine din containerul cv-images, prin /img/ -->
+    <img class="avatar" src="/img/profile.png" alt="Fotografie de profil">
+    <div>
+      <h1>Tîrgola Aurica</h1>
+      <p class="subtitle">Student · grupa IA-242 · Facultatea Calculatoare, Informatică și Microelectronică, UTM</p>
+      <p class="links">
+        <a href="https://github.com/dreadlordhar">GitHub</a>
+        <!-- TODO: adaugă emailul și LinkedIn -->
+        <span>exemplu@email.com</span>
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Despre mine</h2>
+      <p>Student la UTM, interesat de analiza datelor, învățare automată și sisteme de operare.
+         Lucrez cu proiecte practice în Python și Java și public codul pe GitHub.</p>
+    </section>
+
+    <section>
+      <h2>Studii</h2>
+      <ul class="timeline">
+        <li><strong>Universitatea Tehnică a Moldovei</strong>, Facultatea Calculatoare, Informatică și Microelectronică<br>
+            <span>Grupa IA-242</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Proiecte</h2>
+      <div class="cards">
+        <article class="card">
+          <img src="/img/proiect-bigdata.png" alt="Big Data">
+          <h3>Big Data</h3>
+          <p>Hadoop (cluster Docker, MapReduce), Apache Spark, HBase și Cassandra, Neo4j, pe setul NIH Chest X-rays.</p>
+        </article>
+        <article class="card">
+          <img src="/img/proiect-ml.png" alt="Machine Learning">
+          <h3>Machine Learning și NLP</h3>
+          <p>Clasificare de radiografii cu Keras/TensorFlow și analiza sentimentelor cu scikit-learn.</p>
+        </article>
+        <article class="card">
+          <img src="/img/proiect-so.png" alt="Sisteme de operare">
+          <h3>Sisteme de operare</h3>
+          <p>Verificarea integrității fișierelor cu restaurare din backup, criptare AES-256, planificarea memoriei, Docker.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Aplicația Timere (Lab 1)</h2>
+      <p>Aplicația Java Swing din lucrarea de laborator 1 rulează în propriul container și se deschide în browser.</p>
+      <p><a class="btn" href="http://localhost:6080/" target="_blank" rel="noopener">Deschide aplicația Timere</a></p>
+    </section>
+
+    <section>
+      <h2>Competențe</h2>
+      <p class="tags">
+        <span>Python</span><span>Java</span><span>SQL / Cypher</span><span>Git &amp; GitHub</span>
+        <span>Docker</span><span>Linux</span><span>Kaggle</span>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>HTML: <code>cv-web</code> · poze: <code>cv-images</code> · CSS: <code>cv-css</code> · Lab 1: <code>cv-lab1</code></p>
+  </footer>
+</body>
+</html>
