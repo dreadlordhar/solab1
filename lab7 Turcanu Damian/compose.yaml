@@ -1,0 +1,109 @@
+name: solab1-lab7-turcanu-damian
+
+services:
+  web:
+    build:
+      context: ./web
+    image: solab1-lab7-web:1.0
+    ports:
+      - "127.0.0.1:${LAB7_PORT:-8097}:8080"
+    depends_on:
+      images:
+        condition: service_healthy
+      styles:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    user: "101:101"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: 0.25
+    mem_limit: 64m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/api/health 2>/dev/null | grep -q web-container || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    networks:
+      - lab7
+
+  images:
+    build:
+      context: ./images
+    image: solab1-lab7-images:1.0
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    user: "101:101"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: 0.25
+    mem_limit: 64m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz 2>/dev/null | grep -q images-ok || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    networks:
+      - lab7
+
+  styles:
+    build:
+      context: ./styles
+    image: solab1-lab7-styles:1.0
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    user: "101:101"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: 0.25
+    mem_limit: 64m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz 2>/dev/null | grep -q styles-ok || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    networks:
+      - lab7
+
+  timer-lab1:
+    profiles:
+      - lab1
+    build:
+      context: ./timer
+    image: solab1-lab1-timer:1.0
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=8m
+    user: "10001:10001"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: 0.25
+    mem_limit: 128m
+    network_mode: none
+    restart: "no"
+
+networks:
+  lab7:
+    driver: bridge

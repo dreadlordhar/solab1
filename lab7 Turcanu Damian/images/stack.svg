@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" role="img" aria-labelledby="title desc">
+  <title id="title">Servicii Docker separate</title>
+  <desc id="desc">Trei containere pentru site, imagini și CSS conectate printr-o rețea.</desc>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3c879"/><stop offset="1" stop-color="#e49568"/></linearGradient></defs>
+  <rect width="760" height="430" rx="28" fill="#173b42"/>
+  <g stroke="#89b4a6" stroke-width="4" fill="none" stroke-dasharray="8 10"><path d="M245 158h130M515 158h0M420 208v83M245 312h130"/></g>
+  <path d="M364 151l12 7-12 7M504 151l12 7-12 7M413 277l7 14 7-14M364 305l12 7-12 7" fill="none" stroke="#89b4a6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <rect x="42" y="102" width="205" height="112" rx="18" fill="#f5f2ec"/>
+    <rect x="65" y="125" width="46" height="44" rx="10" fill="#d8e7d9"/><path d="M76 137h24M76 147h24M76 157h16" stroke="#1e5454" stroke-width="4" stroke-linecap="round"/>
+    <text x="126" y="145" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#183c42">WEB</text>
+    <text x="126" y="173" font-family="Arial,sans-serif" font-size="14" fill="#536967">HTML + proxy</text>
+  </g>
+  <g>
+    <rect x="515" y="102" width="205" height="112" rx="18" fill="#f5f2ec"/>
+    <rect x="538" y="125" width="46" height="44" rx="10" fill="#f5dfb1"/><circle cx="561" cy="143" r="10" fill="#d89165"/><path d="M545 163l10-10 8 7 8-9 8 12z" fill="#5b9283"/>
+    <text x="599" y="145" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#183c42">IMAGES</text>
+    <text x="599" y="173" font-family="Arial,sans-serif" font-size="14" fill="#536967">SVG assets</text>
+  </g>
+  <g>
+    <rect x="278" y="288" width="205" height="112" rx="18" fill="#f5f2ec"/>
+    <rect x="301" y="311" width="46" height="44" rx="10" fill="#d7e7e2"/><path d="M312 325l-7 8 7 8M335 325l7 8-7 8M329 322l-10 22" fill="none" stroke="#1e5454" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="362" y="330" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#183c42">STYLES</text>
+    <text x="362" y="358" font-family="Arial,sans-serif" font-size="14" fill="#536967">CSS assets</text>
+  </g>
+  <rect x="185" y="40" width="390" height="42" rx="21" fill="#28575a"/>
+  <text x="380" y="67" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="600" fill="#f5f2ec">REȚEA DOCKER COMPOSE</text>
+  <text x="380" y="256" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="url(#g)">SERVICII SEPARATE · LIVRARE MODULARĂ</text>
+</svg>

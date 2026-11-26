@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" role="img" aria-labelledby="title desc">
+  <title id="title">Avatar cu inițialele TD</title>
+  <desc id="desc">Ilustrație abstractă în nuanțe de verde, crem și albastru.</desc>
+  <defs>
+    <linearGradient id="bg" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#d8e7d9"/><stop offset="1" stop-color="#b8cfc9"/></linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#143d43"/><stop offset="1" stop-color="#275a5a"/></linearGradient>
+  </defs>
+  <rect x="18" y="18" width="484" height="484" rx="242" fill="url(#bg)"/>
+  <circle cx="413" cy="110" r="48" fill="#e5b768" opacity=".84"/>
+  <path d="M52 347c45-73 96-105 157-105 72 0 114 42 158 42 41 0 65-17 104-56v200c0 44-37 80-81 80H132c-44 0-80-36-80-80z" fill="#a8c2b8"/>
+  <path d="M130 438c18-85 70-135 137-135 67 0 121 48 143 135v49H130z" fill="url(#shirt)"/>
+  <path d="M216 296c0-34 22-62 52-62 31 0 55 27 55 62v54c0 46-22 76-55 76-31 0-52-29-52-76z" fill="#bf825f"/>
+  <path d="M208 254c11-55 42-83 87-76 44 7 65 42 60 95-19-10-33-29-40-50-23 22-59 35-107 31z" fill="#263b40"/>
+  <path d="M222 334c12 9 27 14 45 14 17 0 32-5 45-14" fill="none" stroke="#8a5744" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="239" cy="293" r="5" fill="#263b40"/><circle cx="299" cy="293" r="5" fill="#263b40"/>
+  <rect x="346" y="360" width="112" height="94" rx="22" fill="#f8f4e9"/>
+  <text x="402" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#163f44">TD</text>
+</svg>
